@@ -105,7 +105,6 @@ Front-Cover Texts and no Back-Cover Texts. A copy of the license is included
 with the archive as COPYING.DOC.
 
 
-Raymond Wan
-June 27, 2018
+Wednesday, June 27, 2018
 
 
