@@ -857,10 +857,10 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
       my $out_end = $j - 1;
       my $out_attr = sprintf ("name=%s;count=%u;width=%u", $gene_id_i, $intron_count, $intron_width);
 #       my $out_score = sprintf ("%.6f", $score);
-      my $outline = join ("\t", $this_chr, "identify", "intron", $out_start, $out_end, $intron_count, $strand_i, "0", $out_attr);
+      my $outline = join ("\t", $this_chr, "sam2irs", "intron", $out_start, $out_end, $intron_count, $strand_i, "0", $out_attr);
       
 #       printf "%s", $this_chr;  ##  Name of the chromosome
-#       printf "\tidentify";
+#       printf "\tsam2irs";
 #       printf "\tintron";
 #       printf "\t%u", $i + 1;  ##  Start position
 #       printf "\t%u", $j - 1;  ##  End position
@@ -1005,7 +1005,7 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
         my $out_start = $i + 1;
         my $out_end = $j - 1;
         my $out_attr = sprintf ("name=%s;count=0;width=%u", $gene_id_i, $exon_width);
-        my $outline = join ("\t", $this_chr, "identify", "exon", $out_start, $out_end, "0", $strand_i, "0", $out_attr);
+        my $outline = join ("\t", $this_chr, "sam2irs", "exon", $out_start, $out_end, "0", $strand_i, "0", $out_attr);
       
         $exons_output[$num_exons_output] = $outline;
         $num_exons_output++;
