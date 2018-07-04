@@ -36,6 +36,8 @@ my $UNINIT_FREQUENCY = 0;
 my $UNINIT_GENE = "";
 
 ##  An initialized base is an exon -- that is, a non-negative integer [0, ...]
+##    A base associated with an exon is indicated by a non-negative integer 
+##    pointing to the GTF record
 my $UNINIT_BASE = -2;
 my $INTRON_BASE = -1;
 
@@ -72,8 +74,6 @@ sub GetGeneName {
 
 ##  Arguments provided by the user
 my $verbose_arg = 0;
-my $summary_arg = 0;
-my $debug_arg = 0;
 my $chrlist_arg = "";
 my $gtf_arg = "";
 my $sam_record_arg = "";
@@ -144,12 +144,6 @@ $config -> define ("exons!", {
 $config -> define ("verbose!", {
            ARGCOUNT => AppConfig::ARGCOUNT_NONE
   });                        ##  Verbose output
-$config -> define ("summary!", {
-           ARGCOUNT => AppConfig::ARGCOUNT_NONE
-  });                        ##  Summary output
-$config -> define ("debug!", {
-           ARGCOUNT => AppConfig::ARGCOUNT_NONE
-  });                        ##  Debug output
 $config -> define ("help!", {
            ARGCOUNT => AppConfig::ARGCOUNT_NONE
   });                        ##  Help screen
@@ -170,16 +164,6 @@ if ($config -> get ("help")) {
 $verbose_arg = 0;
 if ($config -> get ("verbose")) {
   $verbose_arg = 1;
-}
-
-$summary_arg = 0;
-if ($config -> get ("summary")) {
-  $summary_arg = 1;
-}
-
-$debug_arg = 0;
-if ($config -> get ("debug")) {
-  $debug_arg = 1;
 }
 
 if (!defined ($config -> get ("chrlist"))) {
@@ -351,7 +335,8 @@ if ($verbose_arg) {
 
 
 ########################################
-##  Read in the entire SAM file, keeping every record
+##  Read in the entire SAM file, keeping every record since 
+##    we may be using the --samrecord option
 ########################################
 
 $total_sam = 0;
@@ -386,7 +371,7 @@ for (my $i = 0; $i < $total_sam; $i++) {
     
   my ($flag_tmp, $rname_tmp, $pos_tmp, $cigar_tmp) = split /\t/, $line;
   
-  ##  Skip features that are not part of this chromosome
+  ##  Skip features that are not aligned to any chromosome
   if ($rname_tmp eq "*") {
     $classify_sam_input[$i] = $CLASSIFY_SAM_UNALIGNED;
   }
@@ -561,7 +546,7 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
       exit (1);
     }
       
-    ##  Mark the region of this gene as intron
+    ##  Mark the entire region of this gene as an intron, as a form of initialization
     for (my $k = $gene_begin; $k <= $gene_end; $k++) {
       $exon_chr_array[$k] = $INTRON_BASE;
     }
@@ -595,13 +580,13 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
       exit (1);
     }
     
-    ##  Mark the area bounded by start_tmp and end_tmp
+    ##  Mark the exon area bounded by start_tmp and end_tmp
     for (my $k = $start_tmp; $k <= $end_tmp; $k++) {
       $exon_chr_array[$k] = $i;
     }
   }
 
-  ##  Number of introns, exons, etc. positions in the genome
+  ##  Number of introns, exons, etc. positions in this chromosome
   my $intron_pos_count = 0;
   my $not_exon_pos_count = 0;
   my $exon_pos_count = 0;
@@ -1115,17 +1100,47 @@ Input format is SAM; output format is GFF3.  Use perldoc to properly format this
 
 B<sam2irs.pl> <input.sam >output.txt
 
+More detailed help:
+
+  perldoc sam2irs.pl
+
 =head1 DESCRIPTION
 
-TBA
+This script scores the amount of aligned bases within introns by reading in a set of aligned reads.
 
 =head1 ALGORITHM
 
-TBA
+
 
 =head1 OPTIONS
 
-TBA
+=over 5
+
+=item --chrlist I<file>
+
+A file of the list of chromosomes and their lengths.
+  
+=item --gtf I<file>
+
+Indicate the GTF file of genomic features to use.  Only exons will be used; all other features will be ignored.
+  
+=item --samrecord I<file>
+
+Create a record of what type of region each read in the SAM file aligns to.
+  
+=item --exons
+
+By default, intron regions are output.  This flag indicates that exons should be output as well.
+  
+=item --verbose
+
+Display verbose information about the execution of this script.  A lot of output is produced -- primarily used for testing with a small test set.
+  
+=item --help
+
+Display this help message.
+
+=back
 
 =head1 EXAMPLE
 
