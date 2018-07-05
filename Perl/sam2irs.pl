@@ -47,6 +47,9 @@ my $CLASSIFY_SAM_EXON = 2;
 my $CLASSIFY_SAM_INTRON = 3;
 my $CLASSIFY_SAM_BOTH = 4;
 
+my $BOOLEAN_TRUE = 1;
+my $BOOLEAN_FALSE = 0;
+
 
 ########################################
 ##  Important functions
@@ -629,7 +632,7 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
     
     my ($flag_tmp, $rname_tmp, $pos_tmp, $cigar_tmp) = split /\t/, $line;
   
-    ##  Skip features that are not part of this chromosome
+    ##  Skip alignments that are not part of this chromosome
     if ($rname_tmp ne $this_chr) {
       next;
     }
@@ -650,8 +653,8 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
     }
   
     ##  Flags for indicating if the SAM record overlaps with intron or exon or both
-    my $is_intron = 0;
-    my $is_exon = 0;
+    my $is_intron = $BOOLEAN_FALSE;
+    my $is_exon = $BOOLEAN_FALSE;
   
     my $k = $pos_tmp;
     my $end_k = $k;
@@ -709,10 +712,10 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
     
       while ($k < $end_k) {
         if ($exon_chr_array[$k] == $INTRON_BASE) {
-          $is_intron = 1;
+          $is_intron = $BOOLEAN_TRUE;
         }
         elsif ($exon_chr_array[$k] >= 0) {
-          $is_exon = 1;
+          $is_exon = $BOOLEAN_TRUE;
         }
         
         if ($contains_n == 0) {
@@ -722,13 +725,13 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
       }
     }
     
-    if (($is_intron == 1) && ($is_exon == 1)) {
+    if (($is_intron == $BOOLEAN_TRUE) && ($is_exon == $BOOLEAN_TRUE)) {
       $classify_sam_input[$i] = $CLASSIFY_SAM_BOTH;
     }
-    elsif (($is_intron == 1) && ($is_exon == 0)) {
+    elsif (($is_intron == $BOOLEAN_TRUE) && ($is_exon == $BOOLEAN_FALSE)) {
       $classify_sam_input[$i] = $CLASSIFY_SAM_INTRON;
     }
-    elsif (($is_intron == 0) && ($is_exon == 1)) {
+    elsif (($is_intron == $BOOLEAN_FALSE) && ($is_exon == $BOOLEAN_TRUE)) {
       $classify_sam_input[$i] = $CLASSIFY_SAM_EXON;
     }
     else {
@@ -771,15 +774,14 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
   my $not_intron_retention = 0;  ##  Number of non-intron retentions
   my %unique_genes;
 
-  ##  Change <= to < so that we stay within the array; perform a single pass over $exon_chr_array
   for (my $i = 0; $i < $chr_length; $i++) {
     my $j = $i + 1;
     if ($j == $chr_length) {
       last;
     }
   
-    ##  $i continually moves until $i and $j mark the border between the end of an exon and the start of 
-    ##  a non-exon region
+    ##  $i continually moves until $i and $j mark the border between the end of an 
+    ##  exon and the start of a non-exon region
     if (($exon_chr_array[$i] >= 0) && ($exon_chr_array[$j] == $INTRON_BASE)) {
       ##  Need to advance $j to the next exon
       while ($exon_chr_array[$j] == $INTRON_BASE) {
@@ -1110,7 +1112,85 @@ This script scores the amount of aligned bases within introns by reading in a se
 
 =head1 ALGORITHM
 
+This script executes the following steps:
 
+=over 5
+
+=item 1. Initialization of variables.
+
+=item 2. Process the command-line arguments.
+
+=item 3. Read in the file of chromosome lengths (i.e., the I<--chrlist> argument).  Knowing the maximum length of a chromosome limits the amount of memory that is allocated later for the array (whose length is equal to the length of the chromosome).
+
+=item 4. Read in the gene feature annotations (i.e., the GTF file provided with the I<--gtf> argument).
+
+=over 2
+
+=item a. Ignore the annotations for chromosomes (or scaffolds) whose chromosome lengths were not provided.
+
+=item b. Ignore predicted genes (i.e., those of the form "Gm\d+").
+
+=item c. Store gene features that are "exons".  For all other gene features, just count how many there are.
+
+=back
+
+=item 5. Read in the SAM file (i.e., provided via standard in) and store all of the alignments in an array.
+
+=item 6. Make a pass over the stored SAM file and indicate whether the read is:
+
+=over 2
+
+=item a. Unaligned or
+
+=item b. Unknown (i.e., will determine later)
+
+=back
+
+=item 7. For each chromosome, do the following:
+
+=over 2
+
+=item a. Initialize the chromosome arrays.
+
+=item b. For each gene, find its beginning and end.  This would be the exons with the lowest and highest chromosome positions.
+
+=item c. For each gene, mark its location on the chromosome array B<gene_chr_array>.  Using this array, if two genes overlap, then mark both of them as overlapping.
+
+=item d. For each gene, initialize the entire gene's region as an intron.
+
+=item e. For each exon, do the following:
+
+=over 2
+
+=item i. Skip features that are not associated with the chromosome being processed.
+
+=item ii. Get the gene associated with this exon and skip it if it is part of an overlapping gene.
+
+=item iii. Mark area from the start to the end position of the exon.
+
+=item iv. Because of the initialization step previously, any unmarked regions are introns.
+
+=back
+
+=back
+
+=item f. For each alignment, do the following:
+
+=over 2
+
+=item i. Skip alignments not associated with the chromosome being processed.
+
+=item ii. Process each instruction in the CIGAR string, incrementing the number of aligned bases a position at a time.
+
+=item iii. Record whether the alignment is on both an intronic region, an exonic region, or both.
+
+=back
+
+=item g. Scan the entire chromosome for locations where introns occur and output each intron's score.
+
+=item h. If the I<--samrecord> option was provided, then also output a record of where each alignment mapped to (i.e., an intron, an exon, both, or somewhere else).
+
+=back
 
 =head1 OPTIONS
 
@@ -1144,15 +1224,15 @@ Display this help message.
 
 =head1 EXAMPLE
 
-TBA
+Go into the Examples/ subdirectory and type the following:
+
+cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
 
 =head1 NOTES
 
-TBA
+1. Co-ordinates output from this script are B<1-based>.
 
-=head1 LIMITATIONS
-
-TBA
+2. The co-ordinates of each intron are inclusive of the end-points.  Note that the original co-ordinates of the gene are not retained in the output, even if introns are "merged".  This is because only the beginning of the first intron and the end of the last intron contained within the output file.
 
 =head1 AUTHOR
 

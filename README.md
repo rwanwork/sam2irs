@@ -52,7 +52,7 @@ Running examples
 
 In the Examples/ directory type:
 
-  * `cat test1.sam | ../Perl/sam2irs.pl --verbose --debug --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
+  * `cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
 
 With standard error sent to /dev/null, the output will be a single line in GTF format:
 
