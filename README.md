@@ -105,11 +105,11 @@ Running example
 
 ### test1
 
-In the Examples/ directory there is a simple example that depicts how IRS is calculated.  This example consists of one chromosome, one gene, and 6 aligned reads of 6 base pairs in length each.  This is illustrated in the following image (the first position is 1):
+In the Examples/ directory there is a simple example that depicts how IRS is calculated.  This example consists of one chromosome, one gene, and 6 aligned reads of 6 base pairs in length each.  The gene has two exons.  Bases that lie within an intron are in blue; all other bases are in red.  This is illustrated in the following image (the first position is 1):
 
 ![Examples/test1.svg](Examples/test1.svg)
 
-Typethe following to process this example:
+Type the following to process this example:
 
   * `cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
 
