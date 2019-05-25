@@ -5,7 +5,7 @@ sam2irs
 Introduction
 ------------
 
-sam2irs is a program for calculating intron retention scores (IRS) using input in the sequence alignment/map (SAM) format.  It was developed using Perl but a C++ version is in development.
+sam2irs is a program for calculating intron retention scores (IRS') using input in the sequence alignment/map (SAM) format.  It was developed using Perl but a C++ version is in development.
 
 This document accompanies:
 
@@ -105,7 +105,11 @@ Running example
 
 ### test1
 
-In the Examples/ directory type:
+In the Examples/ directory there is a simple example that depicts how IRS is calculated.  This example consists of one chromosome, one gene, and 6 aligned reads of 6 base pairs in length each.  This is illustrated in the following image (the first position is 1):
+
+![Examples/test1.svg](Examples/test1.svg)
+
+Typethe following to process this example:
 
   * `cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
 
@@ -113,7 +117,7 @@ With standard error sent to /dev/null, the output will be a single line in GTF f
 
 chr1    sam2irs        intron  11      17      15      -       0       name=Test;count=15;width=7;aligned_reads=6;aligned_bases=36;
 
-This output indicates that the chromosome "chr1" has an intron at from position 11 to 17 (endpoints are 
+This output indicates that the chromosome "chr1" has an intron from position 11 to 17 (endpoints are 
 included in the interval), which has 15 intronic bases.  The width of this region is 7 base pairs.  The total number of aligned bases is 36 for the entire data set.
 
 The intron retention score is:  (15 / 7) / 36.
