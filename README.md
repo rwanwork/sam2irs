@@ -138,8 +138,7 @@ My homepage is [here](http://www.rwanwork.info/).
 
 The latest version of sam2irs can be downloaded from [GitHub](https://github.com/rwanwork/sam2irs).
 
-If you have any information about bugs, suggestions for the documentation or just have some general 
-comments, feel free to write to one of the above addresses.
+If you have any information about bugs, suggestions for the documentation or just have some general comments, feel free to contact me via e-mail or GitHub.
 
 
 Copyright and License
