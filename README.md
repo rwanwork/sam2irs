@@ -120,7 +120,7 @@ chr1    sam2irs        intron  11      17      15      -       0       name=Test
 This output indicates that the chromosome "chr1" has an intron from position 11 to 17 (endpoints are 
 included in the interval), which has 15 intronic bases.  The width of this region is 7 base pairs.  The total number of aligned bases is 36 for the entire data set.
 
-The intron retention score is:  (15 / 7) / 36.
+The intron retention score is:  (15 / 7) / 36 = 0.0595
 
 Note that sam2irs itself does not calculate this score.  A single additional pass over the output is needed.
 
