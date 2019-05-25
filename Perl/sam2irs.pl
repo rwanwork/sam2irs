@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #    sam2irs.pl -- Converts a set of mapped reads in SAM format to a 
 #      table of intron retention scores
-#    Copyright (C) 2016-2018  Raymond Wan
+#    Copyright (C) 2016-2019  Raymond Wan
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
