@@ -1,0 +1,14 @@
+name: sam2irs
+channels:
+  - conda-forge
+  - r
+  - bioconda
+  - anaconda
+  - intel
+  - defaults
+dependencies:
+  - libgcc-ng=9.1.0=hdf63c60_0
+  - perl=5.26.2=h516909a_1006
+  - perl-appconfig=1.71=pl526_1
+prefix: /home/rwan/.conda/envs/sam2irs
+
