@@ -1236,10 +1236,10 @@ cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.
 
 =head1 AUTHOR
 
-Raymond Wan <rwan.work@gmail.com> or <raymondwan@ust.hk>
+Raymond Wan <rwan.work@gmail.com>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2016-2018, Raymond Wan, All rights reserved.
+Copyright (C) 2016-2019, Raymond Wan, All rights reserved.
 
 
