@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #    sam2irs.pl -- Converts a set of mapped reads in SAM format to a 
 #      table of intron retention scores
 #    Copyright (C) 2016-2019  Raymond Wan
