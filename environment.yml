@@ -7,8 +7,66 @@ channels:
   - intel
   - defaults
 dependencies:
+  - bzip2=1.0.8=h516909a_1
+  - ca-certificates=2019.9.11=hecc5488_0
+  - certifi=2019.9.11=py37_0
+  - expat=2.2.5=he1b5a44_1004
+  - ghostscript=9.22=hf484d3e_1001
+  - icu=58.2=hf484d3e_1000
+  - libffi=3.2.1=he1b5a44_1006
   - libgcc-ng=9.1.0=hdf63c60_0
+  - libgfortran-ng=7.3.0=hdf63c60_2
+  - libstdcxx-ng=9.1.0=hdf63c60_0
+  - libxml2=2.9.9=hea5a465_1
+  - libxslt=1.1.33=h7d1a2b0_0
+  - meme=5.0.5=py37pl526h19b89cf_0
+  - mpi=1.0=openmpi
+  - ncurses=6.1=hf484d3e_1002
+  - openmpi=4.0.1=hc99cbb1_2
+  - openssl=1.1.1c=h516909a_0
   - perl=5.26.2=h516909a_1006
+  - perl-app-cpanminus=1.7044=pl526_1
   - perl-appconfig=1.71=pl526_1
+  - perl-base=2.23=pl526_1
+  - perl-carp=1.38=pl526_3
+  - perl-cgi=4.44=pl526h14c3975_1
+  - perl-common-sense=3.74=pl526_2
+  - perl-constant=1.33=pl526_1
+  - perl-dbi=1.642=pl526_0
+  - perl-encode=2.88=pl526_1
+  - perl-exporter=5.72=pl526_1
+  - perl-extutils-makemaker=7.36=pl526_1
+  - perl-file-path=2.16=pl526_0
+  - perl-file-temp=0.2304=pl526_2
+  - perl-file-which=1.23=pl526_0
+  - perl-html-parser=3.72=pl526h6bb024c_5
+  - perl-html-tagset=3.20=pl526_3
+  - perl-html-template=2.97=pl526_1
+  - perl-html-tree=5.07=pl526_1
+  - perl-json=4.02=pl526_0
+  - perl-json-xs=2.34=pl526h6bb024c_3
+  - perl-log-log4perl=1.49=pl526_0
+  - perl-math-cdf=0.1=pl526h14c3975_5
+  - perl-parent=0.236=pl526_1
+  - perl-scalar-list-utils=1.52=pl526h516909a_0
+  - perl-types-serialiser=1.0=pl526_2
+  - perl-xml-namespacesupport=1.12=pl526_0
+  - perl-xml-parser=2.44_01=pl526ha1d75be_1002
+  - perl-xml-sax=1.02=pl526_0
+  - perl-xml-sax-base=1.09=pl526_0
+  - perl-xml-sax-expat=0.51=pl526_3
+  - perl-xml-simple=2.25=pl526_1
+  - perl-xsloader=0.24=pl526_0
+  - perl-yaml=1.29=pl526_0
+  - pip=19.3.1=py37_0
+  - python=3.7.3=h33d41f4_1
+  - readline=8.0=hf8c457e_0
+  - setuptools=41.6.0=py37_1
+  - sqlite=3.30.1=hcee41ef_0
+  - tk=8.6.9=hed695b0_1003
+  - wheel=0.33.6=py37_0
+  - xz=5.2.4=h14c3975_1001
+  - yaml=0.1.7=h14c3975_1001
+  - zlib=1.2.11=h516909a_1006
 prefix: /home/rwan/.conda/envs/sam2irs
 
