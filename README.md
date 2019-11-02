@@ -24,8 +24,8 @@ Requirements
 
 | Software                | Version | Required? | Web site                                    |
 |:-----------------------:|:-------:|:---------:|:-------------------------------------------:|
-| Perl                    | 5.22.0  | Yes       | perl                                        |
-| AppConfig (Perl module) | 1.71    | Yes       | libappconfig-perl                           |
+| Perl                    | 5.22.0  | Yes       | https://www.perl.org                        |
+| AppConfig (Perl module) | 1.71    | Yes       | https://metacpan.org/pod/AppConfig          |
 | conda                   | 4.7.11  | Yes       | https://docs.conda.io/en/latest/            |
 | Dreme (Meme suite)      | 5.0.5   | Yes       | http://meme-suite.org/doc/dreme.html        |
 
