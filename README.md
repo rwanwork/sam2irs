@@ -5,11 +5,12 @@ sam2irs
 Introduction
 ------------
 
-sam2irs is a program for calculating intron retention scores (IRS') using input in the sequence alignment/map (SAM) format.  It was developed using Perl but a C++ version is in development.
+This repository, **sam2irs**, consists of a set of programs for calculating intron retention scores (IRS') using aligned sequences in the sequence alignment/map (SAM) format as input.  While the main script is called sam2irs, additional scripts have been included to supplement it.  An accompanying script called irs2fasta takes the intronic regions and extracts the up and downstream sequences.
 
-This document accompanies:
+Besides this document, this repository contains the following:
 
   * source code in Perl,
+  * `environment.yml` file for creating a [conda](https://docs.conda.io/en/latest/) environment,
   * licensing information, and
   * a small data file for testing.
 
@@ -21,10 +22,12 @@ The manuscript that makes use of this software is currently in preparation.  It 
 Requirements
 ------------
 
-|Software                |Version  |Required?  |Ubuntu package   |Anaconda package |
-|:----------------------:|:-------:|:---------:|:---------------:|:---------------:|
-|Perl                    | 5.22.0  | Yes       |perl             |perl             |
-|AppConfig (Perl module) | 1.71    | Yes       |libappconfig-perl|perl-appconfig   |
+| Software                | Version | Required? | Web site                                    |
+|:-----------------------:|:-------:|:---------:|:-------------------------------------------:|
+| Perl                    | 5.22.0  | Yes       | perl                                        |
+| AppConfig (Perl module) | 1.71    | Yes       | libappconfig-perl                           |
+| conda                   | 4.7.11  | Yes       | https://docs.conda.io/en/latest/            |
+| Dreme (Meme suite)      | 5.0.5   | Yes       | http://meme-suite.org/doc/dreme.html        |
 
 Experiments with this software have been successfully run on Linux systems running:
   * CentOS 6.9 64-bit and
@@ -38,12 +41,17 @@ Organization
 
 After cloning this repository from GitHub, the following directory structure is obtained:
 
-    ├── Cpp                     C++ version of sam2irs (in development).
-    ├── Examples                Examples to test sam2irs against.
-    │   ├── test1.*             Files related to a very simple test case (see below).
-    ├── LICENSE                 Software license (GNU GPL v3).
-    ├── Perl                    Perl version of sam2irs.
-    └── README.md               This README file.
+    .
+    ├── environment.yml
+    ├── Examples                     Examples to test sam2irs against
+    ├── LICENSE                      Software license (GNU GPL v3)
+    ├── Perl                         Perl scripts
+    │   ├── generate-negative.pl     Generate a set of negative sequences
+    │   ├── intersect-irs.pl         Intersect two sets of IRS files
+    │   ├── irs2fasta.pl             Extract FASTA sequences upstream / downstream of introns
+    │   ├── sam2irs.pl               Main sam2irs script
+    │   └── score-irs.pl             Script for calculating IRS and taking the top N IRS'
+    └── README.md                    This README file
 
 
 Input/Output Format
@@ -59,6 +67,8 @@ As input, sam2irs requires:
 
 The list of chromosomes is a tab-separated file, with each row corresponding to a chromosome.  Each row has two fields.  The first is the name of the chromosome and the second is the length of the chromosome in base pairs.
 
+The input format for irs2fasta is the output format of sam2irs.
+
 
 ### Output
 
@@ -73,6 +83,8 @@ The ninth and last field is a set of attributes separated by semi-colons.  In th
   * aligned_bases -- number of bases that were aligned (used for normalisation)
 
 The number of aligned reads and bases is the same for every feature.  While inefficient in terms of disk space, this allows each row to be normalised independently.
+
+The output format for irs2fasta is the FASTA format.  That is, it is a text file of records.  Each record consists of two lines.  The first line is the name of the sequence preceded by a ">" character.  The second line is a DNA sequence.
 
 
 Method
@@ -103,26 +115,28 @@ The main part of the script is step #4, which processes each chromosome one-by-o
 Running example
 ---------------
 
-### test1
+###  Calculating the IRS
 
-In the Examples/ directory there is a simple example that depicts how IRS is calculated.  This example consists of one chromosome, one gene, and 6 aligned reads of 6 base pairs in length each.  The gene has two exons.  Bases that lie within an intron are in blue; all other bases are in red.  This is illustrated in the following image (the first position is 1):
+In the `Examples/` directory there is a simple example that depicts how IRS is calculated.  This example consists of one chromosome, one gene, and 6 aligned reads of 6 base pairs in length each.  The gene has two exons.  Bases that lie within an intron are in blue; all other bases are in red.  This is illustrated in the following image (the first position is 1):
 
 ![Examples/test1.svg](Examples/test1.svg)
 
 Type the following to process this example:
 
-  * `cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
+  * `cat test.sam | ../Perl/sam2irs.pl --verbose --chrlist test.sizes --gtf test1.gtf 2>/dev/null`
 
 With standard error sent to /dev/null, the output will be a single line in GTF format:
 
 chr1    sam2irs        intron  11      17      15      -       0       name=Test;count=15;width=7;aligned_reads=6;aligned_bases=36;
 
-This output indicates that the chromosome "chr1" has an intron from position 11 to 17 (endpoints are 
-included in the interval), which has 15 intronic bases.  The width of this region is 7 base pairs.  The total number of aligned bases is 36 for the entire data set.
+This output indicates that the chromosome "chr1" has an intron from position 11 to 17 (where the first base is position 1 and endpoints are included in the interval), which has 15 intronic bases.  The width of this region is 7 base pairs.  The total number of aligned bases is 36 for the entire data set.
 
 The intron retention score is:  (15 / 7) / 36 = 0.0595
 
 Note that sam2irs itself does not calculate this score.  A single additional pass over the output is needed.
+
+
+###  Extracting sequences
 
 
 Future Work
@@ -161,6 +175,6 @@ Front-Cover Texts and no Back-Cover Texts. A copy of the license is included
 with the archive as COPYING.DOC.
 
 
-Saturday, May 25, 2019
+Saturday, November 2, 2019
 
 
