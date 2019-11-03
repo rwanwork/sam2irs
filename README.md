@@ -166,15 +166,14 @@ Copyright and License
      Copyright (C) 2016-2019 by Raymond Wan
 
 sam2irs is distributed under the terms of the GNU General
-Public License (GPL, version 3 or later) -- see the file COPYING for details.
+Public License (GPL, version 3 or later) -- see the file LICENSE for details.
 
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version
 published by the Free Software Foundation; with no Invariant Sections, no
 Front-Cover Texts and no Back-Cover Texts. A copy of the license is included
-with the archive as COPYING.DOC.
+with the archive as LICENSE.
 
 
-Saturday, November 2, 2019
 
 
