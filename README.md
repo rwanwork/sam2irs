@@ -133,7 +133,7 @@ This output indicates that the chromosome "chr1" has an intron from position 11 
 
 The intron retention score is:  (15 / 7) / 36 = 0.0595
 
-Note that sam2irs itself does not calculate this score.  A single additional pass over the output is needed.
+In practice, the number of aligned bases will be very large and multiplying by a constant across all data sets is needed to prevent underflow.  In our work, we arbitrarily chose a constant of `100000000000`.
 
 
 ###  Extracting sequences

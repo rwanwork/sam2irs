@@ -95,7 +95,7 @@ $config -> define ("region", {
   ARGCOUNT => AppConfig::ARGCOUNT_ONE,
   ARGS => "=s"
 });                        ##  Indicate what to extract
-$config -> define ("window", {
+$config -> define ("winsize", {
   ARGCOUNT => AppConfig::ARGCOUNT_ONE,
   ARGS => "=i"
 });                        ##  The window size to use
@@ -161,8 +161,8 @@ if (($region_arg ne "intron") &&
   exit (1);
 }
 
-if (defined ($config -> get ("window"))) {
-  $window_size_arg = $config -> get ("window");
+if (defined ($config -> get ("winsize"))) {
+  $window_size_arg = $config -> get ("winsize");
   if ($window_size_arg <= 0) {
     printf STDERR "EE\tThe window size cannot be 0 or negative.\n";
     exit (1);
@@ -305,9 +305,9 @@ if (defined ($config -> get ("genomefn"))) {
   if ($verbose_arg) {
     printf STDERR "II\tNumber of chromosomes in genome file:  %u\n", $chr_count;
   
-    foreach my $key (sort (keys %all_chrs)) {
-      printf STDERR "II\t%s\t%u\n", $key, length ($all_chrs{$key});
-    }
+#     foreach my $key (sort (keys %all_chrs)) {
+#       printf STDERR "II\t%s\t%u\n", $key, length ($all_chrs{$key});
+#     }
   }
 }
 
@@ -318,7 +318,7 @@ if (defined ($config -> get ("genomefn"))) {
 
 my $curr_genome_fn = "";
 foreach my $key (sort (keys %chr_list)) {
-  printf STDERR "II\tProcessing %s...\n", $key;
+#   printf STDERR "II\tProcessing %s...\n", $key;
 
   ##  Current chromosome
   my $chr = "";
@@ -368,7 +368,6 @@ foreach my $key (sort (keys %chr_list)) {
     }
     
     $chr = $chr.$all_chrs{$key};
-    printf STDERR "[%s]\n", $chr;
   }
   else {
     printf STDERR "EE\tYou need to use either the --genomedir and --genomefn options.\n";
@@ -430,7 +429,7 @@ foreach my $key (sort (keys %chr_list)) {
     
     $window_seq = substr ($chr, $window_start, $window_end - $window_start + 1);
     if ($verbose_arg) {
-      printf STDERR "II\t[%s]  Extracted from %u until %u [%s]\n", $strand_gtf, $window_start, $window_end, $window_seq;
+#       printf STDERR "II\t[%s]  Extracted from %u until %u [%s]\n", $strand_gtf, $window_start, $window_end, $window_seq;
     }
     
     ##  Reverse complement the sequence

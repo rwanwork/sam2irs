@@ -42,7 +42,7 @@ my $WINDOW_SIZE = 50;
 ########################################
 
 ##  Arguments provided by the user
-my $window_size_arg = $WINDOW_SIZE;
+my $window_size_arg = 0;
 my $gccount_arg = 0;
 
 ##  Important data structure
@@ -91,18 +91,11 @@ if ($config -> get ("help")) {
   exit (1);
 }
 
-if (!defined ($config -> get ("winsize"))) {
-  printf STDERR "EE\tThe option --winsize is required with a window size.\n";
-  exit (1);
-}
-$window_size_arg = $config -> get ("winsize");
-
 $gccount_arg = 0;
 if ($config -> get ("gccount")) {
   $gccount_arg = 1;
 }
 
-printf STDERR "II\tWindow size:  %u\n", $window_size_arg;
 printf STDERR "II\tGC count only:  ";
 if ($gccount_arg == 0) {
   printf STDERR "No\n";
@@ -130,6 +123,9 @@ $raw_counts{"T"} = 0;
 my $records_total_lines = 0;
 my $dropped_bases = 0;
 my $total_bases = 0;
+
+my $max_length = 0;
+
 while (<STDIN>) {
   my $header = $_;
   chomp $header;
@@ -150,10 +146,8 @@ while (<STDIN>) {
 
   my @bases = split //, $seq;
   
-  ##  Ensure the value to --winsize is the same as the sequence length
-  if (scalar (@bases) != $window_size_arg) {
-    printf STDERR "EE\tArgument provided with --winsize differs in value from the actual sequence length of %u on line %u!\n", scalar (@bases), $.;
-    exit (1);
+  if (scalar (@bases) > $max_length) {
+    $max_length = scalar (@bases);
   }
   
   ##  Count each base.  Bases which are not in the hash are dropped
@@ -169,10 +163,14 @@ while (<STDIN>) {
 }
 
 my $kept_bases = $total_bases - $dropped_bases;
+printf STDERR "II\tMaximum sequence length:  %u\n", $max_length;
 printf STDERR "II\tRecords read:  %u\n", $records_total_lines;
 printf STDERR "II\tTotal bases:  %u\n", $total_bases;
 printf STDERR "II\t  Bases dropped:  %u\n", $dropped_bases;
 printf STDERR "II\t  Bases kept:  %u\n", $kept_bases;
+
+##  Make the window size equal to the longest sequence
+$window_size_arg = $max_length;
 
 my $k = 0;  ##  Nucleotides seen so far (array position)
 foreach my $key (sort (keys %raw_counts)) {
