@@ -31,9 +31,6 @@ use Pod::Usage;
 ##  Important constants
 ########################################
 
-##  Constant for normalization
-my $NORMALIZER_CONSTANT = 100000000000;
-
 
 ########################################
 ##  Important functions
@@ -153,7 +150,11 @@ while (<STDIN>) {
   my $key = $chr_tmp."-".$start_gtf."-".$end_gtf.$strand_gtf;
   
   if (defined ($duplicate_check{$key})) {
-    printf STDOUT "%s\n", $line;
+    $score_gtf = 0;
+    $attributes_gtf = "";
+  
+    my $new_line = join ("\t", $chr_tmp, $source_gtf, $type_gtf, $start_gtf, $end_gtf, $score_gtf, $strand_gtf, $phase_gtf, $attributes_gtf);
+    printf STDOUT "%s\n", $new_line;
   }
 }
 
