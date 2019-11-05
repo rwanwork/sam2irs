@@ -17,8 +17,8 @@ rule Score_IRS:
   output:
     output_fn1 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-1.txt",
     output_fn2 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-2.txt",
-    output_fn1 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-1-IRS.txt",
-    output_fn2 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-2-IRS.txt"
+    output_fn3 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-1-IRS.txt",
+    output_fn4 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-2-IRS.txt"
   params:
     topn = "{topn}"
   shell:
@@ -26,8 +26,8 @@ rule Score_IRS:
     cat {input.input_fn1} | Perl/score-irs.pl --topn {params.topn} >{output.output_fn1}
     cat {input.input_fn2} | Perl/score-irs.pl --topn {params.topn} >{output.output_fn2}
 
-    cat {input.input_fn1} | Perl/score-irs.pl --showscore --topn {params.topn} >{output.output_fn1}
-    cat {input.input_fn2} | Perl/score-irs.pl --showscore --topn {params.topn} >{output.output_fn2}
+    cat {input.input_fn1} | Perl/score-irs.pl --showscore --topn {params.topn} >{output.output_fn3}
+    cat {input.input_fn2} | Perl/score-irs.pl --showscore --topn {params.topn} >{output.output_fn4}
     """
 
 rule Calculate_Intersect:
@@ -41,7 +41,7 @@ rule Calculate_Intersect:
     cat {input.input_fn1} | Perl/intersect-irs.pl --first {input.input_fn2} >{output.output_fn1}
     """
 
-rule Get_Positive_Seqs:
+rule Get_Positive_Seqs_UpDown:
   input:
     input_fn1 = OUTPUT_DIR + "/intersect/{sample}/{topn}/intersect.txt",
     input_fn2 = "genome-masked.fna"
@@ -53,6 +53,18 @@ rule Get_Positive_Seqs:
   shell:
     """
     cat {input.input_fn1} | Perl/irs2fasta.pl --verbose --genomefn {input.input_fn2} --region {params.method} >{output.output_fn1}
+    """
+
+
+rule Get_Positive_Seqs_Intron:
+  input:
+    input_fn1 = OUTPUT_DIR + "/intersect/{sample}/{topn}/intersect.txt",
+    input_fn2 = "genome-masked.fna"
+  output:
+    output_fn1 = OUTPUT_DIR + "/sequences/{sample}/{topn}/intron/positive.fna"
+  shell:
+    """
+    cat {input.input_fn1} | Perl/irs2fasta.pl --verbose --genomefn {input.input_fn2} --region intron >{output.output_fn1}
     """
 
 
@@ -68,7 +80,7 @@ rule Get_Negative_Seqs:
     cat {input.input_fn1} | Perl/generate-negative.pl >{output.output_fn1}
     """
 
-rule Run_Dreme:
+rule Run_Dreme_UpDown:
   input:
     input_fn1 = OUTPUT_DIR + "/sequences/{sample}/{topn}/{winsize}/{method}/positive.fna",
     input_fn2 = OUTPUT_DIR + "/sequences/{sample}/{topn}/{winsize}/{method}/negative.fna"
@@ -87,3 +99,17 @@ rule Run_Dreme:
     """
 
 
+rule Run_Dreme_Intron:
+  input:
+    input_fn1 = OUTPUT_DIR + "/sequences/{sample}/{topn}/intron/positive.fna"
+  output:
+    output_fn1 = OUTPUT_DIR + "/motif/{sample}/{topn}/intron/dreme.html"
+  log:
+    log_fn1 = OUTPUT_DIR + "/motif/{sample}/{topn}/intron/log.txt"
+  params:
+    sample = "{sample}",
+    topn = "{topn}"
+  shell:
+    """
+    time dreme-py3 -p {input.input_fn1} -oc {OUTPUT_DIR}/motif/{params.sample}/{params.topn}/intron/ -mink 6 -maxk 8 2>&1 >{log.log_fn1}
+    """

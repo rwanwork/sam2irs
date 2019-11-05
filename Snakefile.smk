@@ -20,7 +20,7 @@ wildcard_constraints:
   topn = "\d+",
   winsize = "\d+",
   sample = "\w+",
-  method = "upstream|downstream|intron"
+  method = "upstream|downstream"
 
 ##  Include additional functions and rules
 include:  "rules/global-vars.smk"
@@ -82,14 +82,38 @@ rule all:
     OUTPUT_DIR + "/Complete/fSC_400_500.done",
     OUTPUT_DIR + "/Complete/pSC_400_500.done",
     OUTPUT_DIR + "/Complete/uSC_400_500.done",
-    OUTPUT_DIR + "/Complete/YFP_400_500.done"
+    OUTPUT_DIR + "/Complete/YFP_400_500.done",    
+    OUTPUT_DIR + "/Complete/ASC_50_250.done",
+    OUTPUT_DIR + "/Complete/DEK_50_250.done",
+    OUTPUT_DIR + "/Complete/fSC_50_250.done",
+    OUTPUT_DIR + "/Complete/pSC_50_250.done",
+    OUTPUT_DIR + "/Complete/uSC_50_250.done",
+    OUTPUT_DIR + "/Complete/YFP_50_250.done",
+    OUTPUT_DIR + "/Complete/ASC_100_250.done",
+    OUTPUT_DIR + "/Complete/DEK_100_250.done",
+    OUTPUT_DIR + "/Complete/fSC_100_250.done",
+    OUTPUT_DIR + "/Complete/pSC_100_250.done",
+    OUTPUT_DIR + "/Complete/uSC_100_250.done",
+    OUTPUT_DIR + "/Complete/YFP_100_250.done",
+    OUTPUT_DIR + "/Complete/ASC_200_250.done",
+    OUTPUT_DIR + "/Complete/DEK_200_250.done",
+    OUTPUT_DIR + "/Complete/fSC_200_250.done",
+    OUTPUT_DIR + "/Complete/pSC_200_250.done",
+    OUTPUT_DIR + "/Complete/uSC_200_250.done",
+    OUTPUT_DIR + "/Complete/YFP_200_250.done",
+    OUTPUT_DIR + "/Complete/ASC_400_250.done",
+    OUTPUT_DIR + "/Complete/DEK_400_250.done",
+    OUTPUT_DIR + "/Complete/fSC_400_250.done",
+    OUTPUT_DIR + "/Complete/pSC_400_250.done",
+    OUTPUT_DIR + "/Complete/uSC_400_250.done",
+    OUTPUT_DIR + "/Complete/YFP_400_250.done"
 
 
 rule Combine_Results:
   input:
     input_fn1 = OUTPUT_DIR + "/motif/{sample}/{topn}/{winsize}/upstream/dreme.html",
     input_fn2 = OUTPUT_DIR + "/motif/{sample}/{topn}/{winsize}/downstream/dreme.html",
-    input_fn3 = OUTPUT_DIR + "/motif/{sample}/{topn}/{winsize}/intron/dreme.html"
+    input_fn3 = OUTPUT_DIR + "/motif/{sample}/{topn}/intron/dreme.html"
   output:
     output_fn1 = OUTPUT_DIR + "/Complete/{sample}_{winsize}_{topn}.done"
   shell:
