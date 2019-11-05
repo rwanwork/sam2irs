@@ -16,13 +16,18 @@ rule Score_IRS:
     input_fn2 = INPUT_DIR + "/{sample}/{sample}-2.txt"
   output:
     output_fn1 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-1.txt",
-    output_fn2 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-2.txt"
+    output_fn2 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-2.txt",
+    output_fn1 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-1-IRS.txt",
+    output_fn2 = OUTPUT_DIR + "/scores/{sample}/{topn}/score-2-IRS.txt"
   params:
     topn = "{topn}"
   shell:
     """
     cat {input.input_fn1} | Perl/score-irs.pl --topn {params.topn} >{output.output_fn1}
     cat {input.input_fn2} | Perl/score-irs.pl --topn {params.topn} >{output.output_fn2}
+
+    cat {input.input_fn1} | Perl/score-irs.pl --showscore --topn {params.topn} >{output.output_fn1}
+    cat {input.input_fn2} | Perl/score-irs.pl --showscore --topn {params.topn} >{output.output_fn2}
     """
 
 rule Calculate_Intersect:
