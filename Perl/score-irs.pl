@@ -111,6 +111,7 @@ sub ScoreCmpFunction {
 
 ##  Arguments provided by the user
 my $verbose_arg = 0;
+my $showscore_arg = 0;
 my $topn_arg = 0;
 
 my @gtf_array;  ##  GTF file in an array
@@ -138,6 +139,9 @@ $config -> define ("topn", {
   ARGCOUNT => AppConfig::ARGCOUNT_ONE,
   ARGS => "=i"
 });                        ##  How many to keep
+$config -> define ("showscore!", {
+  ARGCOUNT => AppConfig::ARGCOUNT_NONE
+});                        ##  Print the score out
 $config -> define ("verbose!", {
            ARGCOUNT => AppConfig::ARGCOUNT_NONE
   });                        ##  Verbose output
@@ -161,6 +165,11 @@ if ($config -> get ("help")) {
 $verbose_arg = 0;
 if ($config -> get ("verbose")) {
   $verbose_arg = 1;
+}
+
+$showscore_arg = 0;
+if ($config -> get ("showscore")) {
+  $showscore_arg = 1;
 }
 
 if (!defined ($config -> get ("topn"))) {
@@ -230,7 +239,9 @@ if ($verbose_arg) {
 my @sorted_gtf_array = sort ScoreCmpFunction @gtf_array;
 
 for (my $i = 0; $i < $topn_arg; $i++) {
-#   printf STDERR "%f\t[%s]\n", $sorted_gtf_array[$i]{"score"}, $sorted_gtf_array[$i]{"record"};
+  if ($showscore_arg) {
+    printf STDOUT "%f\t", $sorted_gtf_array[$i]{"score"};
+  }
   printf STDOUT "%s\n", $sorted_gtf_array[$i]{"record"};
 }
 
