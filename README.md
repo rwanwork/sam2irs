@@ -16,7 +16,7 @@ Besides this document, this repository contains the following:
 
 The manuscript that makes use of this software has been accepted and due to appear as:
 
-    L. Yue, R. Wan, S. Luan, W. Zeng, C. Preusch, and T. H. Cheung.  Dek Modulates Global Intron Retention during Muscle Stem Cells Quiescence Exit.  Development Cell, (To appear).
+    L. Yue, R. Wan, S. Luan, W. Zeng, and T. H. Cheung.  Dek Modulates Global Intron Retention during Muscle Stem Cells Quiescence Exit.  Development Cell, (To appear).
     
 An earlier version appears in Cell Press' Sneak Peak [service](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3385139).
 
