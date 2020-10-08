@@ -127,7 +127,7 @@ Type the following to process this example:
 
   * `cat test.sam | ../Perl/sam2irs.pl --verbose --chrlist test.sizes --gtf test1.gtf 2>/dev/null`
 
-With standard error sent to /dev/null, the output will be a single line in GTF format:
+With standard error sent to `/dev/null`, the output will be a single line in GTF format on your screen:
 
 chr1    sam2irs        intron  11      17      15      -       0       name=Test;count=15;width=7;aligned_reads=6;aligned_bases=36;
 
@@ -135,7 +135,13 @@ This output indicates that the chromosome "chr1" has an intron from position 11 
 
 The intron retention score is:  (15 / 7) / 36 = 0.0595
 
-In practice, the number of aligned bases will be very large and multiplying by a constant across all data sets is needed to prevent underflow.  In our work, we arbitrarily chose a constant of `100000000000`.
+In practice, the number of aligned bases will be very large and multiplying by a constant across all data sets is needed to prevent underflow.  In our work, we arbitrarily chose a constant of `100000000000`.  You will need to find a constant that gives you the range of values that fits for your data set, and then divide it through for your entire file.  What matters is the relative intron retention scores between intronic regions.
+
+As a final note, if you want the output to appear in a file called `output.gtf`, then change the above line to:
+
+  * `cat test.sam | ../Perl/sam2irs.pl --verbose --chrlist test.sizes --gtf test1.gtf 1>output.gtf 2>/dev/null`
+
+And if you omit `2>/dev/null`, some debugging information will appear.  Feel free to remove it, if you want to see this debugging information.
 
 
 ###  Extracting sequences
