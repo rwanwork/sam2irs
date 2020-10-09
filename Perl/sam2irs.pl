@@ -82,7 +82,7 @@ sub GetGeneName {
 ########################################
 
 ##  Arguments provided by the user
-my $verbose_level_arg = 0;
+my $verbose_level_arg = $VERBOSE_NONE;
 my $chrlist_arg = "";
 my $gtf_arg = "";
 my $sam_record_arg = "";
@@ -174,16 +174,16 @@ if ($config -> get ("help")) {
 
 $verbose_level_arg = $VERBOSE_NONE;
 if (defined ($config -> get ("verbose"))) {
-  if ($config -> get ("verbose") == 0) {
+  if ($config -> get ("verbose") == $VERBOSE_NONE) {
     $verbose_level_arg = $VERBOSE_NONE;
   }
-  elsif ($config -> get ("verbose") == 1) {
+  elsif ($config -> get ("verbose") == $VERBOSE_SUMMARY) {
     $verbose_level_arg = $VERBOSE_SUMMARY;
   }
-  elsif ($config -> get ("verbose") == 2) {
+  elsif ($config -> get ("verbose") == $VERBOSE_CHR) {
     $verbose_level_arg = $VERBOSE_CHR;
   }
-  elsif ($config -> get ("verbose") == 3) {
+  elsif ($config -> get ("verbose") == $VERBOSE_ALL) {
     $verbose_level_arg = $VERBOSE_ALL;
   }
   else {
