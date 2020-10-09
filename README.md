@@ -69,7 +69,7 @@ As input, sam2irs requires:
 
 The list of chromosomes is a tab-separated file, with each row corresponding to a chromosome.  Each row has two fields.  The first is the name of the chromosome and the second is the length of the chromosome in base pairs.
 
-The input format for irs2fasta is the output format of sam2irs.
+The input format for `irs2fasta` is the output format of `sam2irs`.
 
 
 ### Output
@@ -114,6 +114,14 @@ The main part of the script is step #4, which processes each chromosome one-by-o
   4.  For each aligned read, use the CIGAR string to indicate how many bases aligned at each position of the chromosome.  Also record whether the read aligns to an exon, an intron, both intron and exon (i.e., it straddles the boundary between the two), or neither.
 
 
+Additional documentation
+------------------------
+
+In addition to this `README.md`, documentation has been placed at the end of the script in Perl's [PerlPod](https://perldoc.perl.org/perlpod) format.  To view it, you can type `perldoc sam2irs.pl`.
+
+Note that the PerlDoc software has to be installed in order to view it.  Alternatively, you can just go to the end of the script with your favourite editor.
+
+
 Running example
 ---------------
 
@@ -125,9 +133,9 @@ In the `Examples/` directory there is a simple example that depicts how IRS is c
 
 Type the following to process this example:
 
-  * `cat test.sam | ../Perl/sam2irs.pl --verbose --chrlist test.sizes --gtf test1.gtf 2>/dev/null`
+  * `cat test.sam | ../Perl/sam2irs.pl --verbose 0 --chrlist test.sizes --gtf test1.gtf 1>output.gtf 2>error.txt`
 
-With standard error sent to `/dev/null`, the output will be a single line in GTF format on your screen:
+Any errors will be sent to the file `error.txt`.  The output will be sent to the file `output.gtf`, which in our example is the following single line in GTF format:
 
 chr1    sam2irs        intron  11      17      15      -       0       name=Test;count=15;width=7;aligned_reads=6;aligned_bases=36;
 
@@ -137,20 +145,18 @@ The intron retention score is:  (15 / 7) / 36 = 0.0595
 
 In practice, the number of aligned bases will be very large and multiplying by a constant across all data sets is needed to prevent underflow.  In our work, we arbitrarily chose a constant of `100000000000`.  You will need to find a constant that gives you the range of values that fits for your data set, and then divide it through for your entire file.  What matters is the relative intron retention scores between intronic regions.
 
-As a final note, if you want the output to appear in a file called `output.gtf`, then change the above line to:
 
-  * `cat test.sam | ../Perl/sam2irs.pl --verbose --chrlist test.sizes --gtf test1.gtf 1>output.gtf 2>/dev/null`
+Problems
+--------
 
-And if you omit `2>/dev/null`, some debugging information will appear.  Feel free to remove it, if you want to see this debugging information.
+Hopefully, you do not encounter problems while using this program.  However, if you do, then you can obtain additional information by increasing the level of verbosity (i.e., the `--verbose` option).  Instead of the `0` in the above example, consider other values:
 
+0.  Do not output any debugging information.
+1.  Provide summary information as the script starts and as it finishes.
+2.  Provide information as each chromosome is processed.
+3.  Provide all debugging information.
 
-###  Extracting sequences
-
-
-Future Work
------------
-
-A hopefully faster implementation in C++ is currently being developed.
+Note that fatal errors will cause the program to terminate immediately with an error message.  This will happen regardless of the verbose level provided.
 
 
 About sam2irs
@@ -164,14 +170,14 @@ My homepage is [here](http://www.rwanwork.info/).
 
 The latest version of sam2irs can be downloaded from [GitHub](https://github.com/rwanwork/sam2irs).
 
-If you have any information about bugs, suggestions for the documentation or just have some general comments, feel free to contact me via e-mail or GitHub.
+If you have any information about bugs, suggestions for the documentation or just have some general comments, feel free to contact me via e-mail or as a GitHub issue.  (Of the two, I prefer GitHub.)
 
 
 Copyright and License
 ---------------------
 
      sam2irs (SAM to intron retention score calculator)
-     Copyright (C) 2016-2019 by Raymond Wan
+     Copyright (C) 2016-2020 by Raymond Wan
 
 sam2irs is distributed under the terms of the GNU General
 Public License (GPL, version 3 or later) -- see the file LICENSE for details.
