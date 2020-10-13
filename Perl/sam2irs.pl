@@ -367,11 +367,16 @@ while (<STDIN>) {
   my $line = $_;
   chomp $line;
   
+  ##  Ignore the SAM header
+  if ($line =~ /^@/) {
+    next;
+  }
+  
   ##  Handle the rare chance that there are blank lines at the end of the SAM file
   if (length ($line) == 0) {
     next;
   }
-  
+
   my ($qname_tmp, $flag_tmp, $rname_tmp, $pos_tmp, $mapq_tmp, $cigar_tmp, $rnext_tmp, $pnext_tmp, $tlen_tmp, $seq_tmp, $qual_tmp) = split /\t/, $line;
 
   ##  Store the alignment in an array
@@ -381,7 +386,7 @@ while (<STDIN>) {
 }
 
 if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-  printf STDERR "II\tSAM input lines read from stdin:  %u\n\n", $total_sam;
+  printf STDERR "II\tSAM input lines read from stdin (ignoring the header lines):  %u\n\n", $total_sam;
 }
 
 ##  After knowing the size of the SAM file, make another pass over it, initializing it.
