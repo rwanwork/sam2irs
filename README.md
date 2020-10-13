@@ -159,6 +159,14 @@ Hopefully, you do not encounter problems while using this program.  However, if 
 Note that fatal errors will cause the program to terminate immediately with an error message.  This will happen regardless of the verbose level provided.
 
 
+Hints
+-----
+
+1.  `sam2irs` does not directly support compressed SAM files in BAM format.  However, since it accepts the SAM file via standard in, you could simply do this instead:
+
+    `samtools view test.bam | ../Perl/sam2irs.pl --verbose 0 --chrlist test.sizes --gtf test1.gtf 1>output.gtf 2>error.txt`
+    
+    
 About sam2irs
 -------------
 
@@ -179,14 +187,9 @@ Copyright and License
      sam2irs (SAM to intron retention score calculator)
      Copyright (C) 2016-2020 by Raymond Wan
 
-sam2irs is distributed under the terms of the GNU General
-Public License (GPL, version 3 or later) -- see the file LICENSE for details.
+sam2irs is distributed under the terms of the GNU General Public License (GPL, version 3 or later) -- see the file LICENSE for details.
 
-Permission is granted to copy, distribute and/or modify this document under the
-terms of the GNU Free Documentation License, Version 1.3 or any later version
-published by the Free Software Foundation; with no Invariant Sections, no
-Front-Cover Texts and no Back-Cover Texts. A copy of the license is included
-with the archive as LICENSE.
+Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts and no Back-Cover Texts. A copy of the license is included with the archive as LICENSE.
 
 
 
