@@ -94,17 +94,17 @@ Method
 
 The sam2irs script proceeds as follows:
 
-  1.  Read in the list of chromosomes to consider.
-  2.  Read in the list of exons:
+  1.  Read in the list of exons:
     * Exclude genes from chromosomes that are are not to be considered (i.e., usually unassigned scaffolds, etc.).
     * Exclude predicted genes that start with "Gm".
     * Exclude all features (as indicated by the third field of the GTF format) that are not exons.  More specifically, the features "CDS", "start_codon", and "stop_codon" are dropped.
-  3.  Read in the aligned reads.
+  2.  Read in the aligned reads.
+  3.  Using the aligned reads and the list of exons, determine the "length" of each chromosome.
   4.  Process each chromosome of the genome one-by-one (see below).
   5.  Output the intron retention scores.
   6.  If the --samrecord argument is provided, then print to file the "classification" of each read.
 
-In essence, the script creates multiple arrays, with each array equal in size to the length of the chromosome under consideration.  These arrays might indicate the gene associated with a particular location (thus, if more than one gene is associated with a single location, then it is an overlapping gene); whether the position is an intron or an exon; and the number of bases aligned to that position.  In the Perl version of sam2irs, the names of these 3 arrays are `gene_chr_array`, `exon_chr_array`, and `freq_chr_array`, respectively.
+In essence, the script creates multiple arrays, with each array equal in size to the length of the chromosome under consideration.  These arrays might indicate the gene associated with a particular location (thus, if more than one gene is associated with a single location, then it is an overlapping gene); whether the position is an intron or an exon; and the number of bases aligned to that position.  In the Perl version of `sam2irs`, the names of these 3 arrays are `gene_chr_array`, `exon_chr_array`, and `freq_chr_array`, respectively.
 
 The main part of the script is step #4, which processes each chromosome one-by-one.  The main steps this part of the script is as follows:
 
@@ -179,7 +179,7 @@ Hints
 
 1.  `sam2irs` does not directly support compressed SAM files in BAM format.  However, since it accepts the SAM file via standard in, you could simply do this instead:
 
-    `samtools view test.bam | ../Perl/sam2irs.pl --verbose 0 --chrlist test.sizes --gtf test1.gtf 1>output.gtf 2>error.txt`
+    `samtools view test.bam | ../Perl/sam2irs.pl --verbose 0 --gtf test1.gtf 1>output.gtf 2>error.txt`
     
     
 About sam2irs
