@@ -83,7 +83,6 @@ sub GetGeneName {
 
 ##  Arguments provided by the user
 my $verbose_level_arg = $VERBOSE_NONE;
-my $chrlist_arg = "";
 my $gtf_arg = "";
 my $sam_record_arg = "";
 my $exons_arg = 0;
@@ -135,10 +134,6 @@ my $config = AppConfig -> new ({
 
 my $getopt = AppConfig::Getopt -> new ($config);
 
-$config -> define ("chrlist", {
-           ARGCOUNT => AppConfig::ARGCOUNT_ONE,
-           ARGS => "=s"
-  });                        ##  Chromosome list
 $config -> define ("gtf", {
            ARGCOUNT => AppConfig::ARGCOUNT_ONE,
            ARGS => "=s"
@@ -192,12 +187,6 @@ if (defined ($config -> get ("verbose"))) {
   }
 }
 
-if (!defined ($config -> get ("chrlist"))) {
-  printf STDERR "EE\tThe option --chrlist requires a list of chromosomes (i.e., format is genome sizes file).\n";
-  exit (1);
-}
-$chrlist_arg = $config -> get ("chrlist");
-
 if (!defined ($config -> get ("gtf"))) {
   printf STDERR "EE\tThe option --gtf requires a GTF filename.\n";
   exit (1);
@@ -224,7 +213,6 @@ if ($config -> get ("exons")) {
 ########################################
 
 if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-  printf STDERR "II\tFilename of input chromosome list:  %s\n", $chrlist_arg;
   printf STDERR "II\tFilename of input GTF file:  %s\n", $gtf_arg;
   printf STDERR "II\tOptional file for recording information about SAM files:  ";
   if (defined ($config -> get ("samrecord"))) {
@@ -244,47 +232,12 @@ if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
 
 
 ########################################
-##  Read in chromosome list
-########################################
-
-if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-  printf STDERR "II\tProcessing chromosome lengths (%s):\n", $chrlist_arg;
-}
-
-open (my $chr_fp, "<", $chrlist_arg) or die "EE\tCould not open $chrlist_arg for input!\n";
-while (<$chr_fp>) {
-  my $line = $_;
-  chomp $line;
-  
-  my ($chr_tmp, $size_tmp) = split /\t/, $line;
-  if (defined ($chrlist_hash_input{$chr_tmp})) {
-    printf STDERR "EE\tDuplicate chromosome found:  %s!\n", $chr_tmp;
-    exit (1);
-  }
-  
-  $chrlist_hash_input{$chr_tmp} = $size_tmp;
-  $chrlist_sam_acc{$chr_tmp} = 0;
-  $chrlist_gtf_acc{$chr_tmp} = 0;
-  
-  if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-    printf STDERR "II\t  %s\t%u\n", $chr_tmp, $size_tmp;
-  }
-}
-close ($chr_fp);
-
-if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-  printf STDERR "\n";
-}
-
-
-########################################
 ##  Read in the entire GTF file, discarding records that are not relevant 
 ##    to our data set, as well as predicted genes
 ########################################
 
 my $total_gtf = 0;
 my $gtf_input_pos = 0;
-my $not_chr_gtf = 0;
 my $gm_gtf = 0;
 
 my $exon_count = 0;
@@ -307,12 +260,6 @@ while (<$gtf_fp>) {
   
   my ($seqname_tmp, $source_tmp, $feature_tmp, $start_tmp, $end_tmp, $score_tmp, $strand_tmp, $frame_tmp, $attribute_tmp) = split /\t/, $line;
  
-  ##  Check that it is one of the chromosomes we are interested in
-  if (!defined ($chrlist_hash_input{$seqname_tmp})) {
-    $not_chr_gtf++;
-    next;
-  }
-  
   ##  Drop predicted genes
   if ($attribute_tmp =~ /gene_id "Gm\d+"/) {
     $gm_gtf++;
@@ -346,7 +293,6 @@ if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
   printf STDERR "II\tProcessed GTF file (%s):\n", $gtf_arg;
   printf STDERR "II\t  Total input lines read:  %u\n", $total_gtf;
   printf STDERR "II\t    Retained (exons only):  %u\n", $gtf_input_pos;
-  printf STDERR "II\t    Discarded (Not any of the chrs):  %u\n", $not_chr_gtf;
   printf STDERR "II\t    Discarded (Gm):  %u\n", $gm_gtf;
   printf STDERR "II\t    Discarded:\n";
   printf STDERR "II\t      # of CDS:  %u\n", $cds_count;
@@ -362,13 +308,20 @@ if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
 ##    we may be using the --samrecord option
 ########################################
 
+my $sam_header_lines = 0;
+my $sam_total_lines = 0;
+my $sam_invalid_lines = 0;
+
 $total_sam = 0;
 while (<STDIN>) {
   my $line = $_;
   chomp $line;
   
+  $sam_total_lines++;
+  
   ##  Ignore the SAM header
   if ($line =~ /^@/) {
+    $sam_header_lines++;
     next;
   }
   
@@ -376,8 +329,15 @@ while (<STDIN>) {
   if (length ($line) == 0) {
     next;
   }
+  
+  my @tmp_array = split /\t/, $line;
+  if (scalar (@tmp_array) < 11) {
+    printf STDERR "WW\tLine %u of the SAM file is incomplete with only %u columns [%s].\n", $sam_total_lines, scalar (@tmp_array), $line;
+    $sam_invalid_lines++;
+    next;
+  }
 
-  my ($qname_tmp, $flag_tmp, $rname_tmp, $pos_tmp, $mapq_tmp, $cigar_tmp, $rnext_tmp, $pnext_tmp, $tlen_tmp, $seq_tmp, $qual_tmp) = split /\t/, $line;
+  my ($qname_tmp, $flag_tmp, $rname_tmp, $pos_tmp, $mapq_tmp, $cigar_tmp, $rnext_tmp, $pnext_tmp, $tlen_tmp, $seq_tmp, $qual_tmp, $others_fields_tmp) = split /\t/, $line;
 
   ##  Store the alignment in an array
   $sam_input[$total_sam] = join ("\t", $flag_tmp, $rname_tmp, $pos_tmp, $cigar_tmp);
@@ -386,7 +346,11 @@ while (<STDIN>) {
 }
 
 if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-  printf STDERR "II\tSAM input lines read from stdin (ignoring the header lines):  %u\n\n", $total_sam;
+  printf STDERR "II\tSAM file:\n";
+  printf STDERR "II\t  Total number of lines read:  %u\n", $sam_total_lines;
+  printf STDERR "II\t  Number of header lines:  %u\n", $sam_header_lines;
+  printf STDERR "II\t  Number of invalid lines:  %u\n", $sam_invalid_lines;
+  printf STDERR "II\t  Number of lines stored:  %u\n", $total_sam;
 }
 
 ##  After knowing the size of the SAM file, make another pass over it, initializing it.
@@ -406,10 +370,51 @@ for (my $i = 0; $i < $total_sam; $i++) {
 
 
 ########################################
+##  Make a pass over the SAM and then the GTF files:
+##    1)  Use the SAM file to determine which chromosomes to process, as well as the tenative lengths
+##    2)  Update the lengths using the GTF file
+########################################
+
+for (my $i = 0; $i < $total_sam; $i++) {  
+  my $line = $sam_input[$i];
+    
+  my ($flag_tmp, $rname_tmp, $pos_tmp, $cigar_tmp) = split /\t/, $line;
+  
+  if (!defined ($chrlist_hash_input{$rname_tmp})) {
+    $chrlist_hash_input{$rname_tmp} = $pos_tmp;
+    $chrlist_sam_acc{$rname_tmp} = 0;
+    $chrlist_gtf_acc{$rname_tmp} = 0;
+  }
+  else {
+    if ($pos_tmp > $chrlist_hash_input{$rname_tmp}) {
+      $chrlist_hash_input{$rname_tmp} = $pos_tmp;
+    }
+  }
+}
+
+for (my $i = 0; $i < $gtf_input_pos; $i++) {  
+  my $line = $gtf_input[$i];
+
+  my ($seqname_tmp, $source_tmp, $feature_tmp, $start_tmp, $end_tmp, $score_tmp, $strand_tmp, $frame_tmp, $attribute_tmp) = split /\t/, $line;
+  
+  if (!defined ($chrlist_hash_input{$seqname_tmp})) {
+    next;
+  }
+  else {
+    if ($end_tmp > $chrlist_hash_input{$seqname_tmp}) {
+      $chrlist_hash_input{$seqname_tmp} = $end_tmp;
+    }
+  }
+}
+
+
+########################################
 ##  Process a chromosome at a time
 ########################################
 
 foreach my $this_chr (sort (keys %chrlist_hash_input)) {
+#   printf STDERR "Processing:  %s\n", $this_chr;
+
   ##  Increase the length of the chromosome (1-based, so add 1)
   my $chr_length = $chrlist_hash_input{$this_chr} + 1;
 
@@ -499,6 +504,8 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
       printf STDERR "EE\tEnd of gene missing for:  %s\n", $key;
       exit (1);
     }
+    
+#     printf STDERR "%s\t%s\t%s\n", $key, $gene_begin{$key}, $gene_end{$key};
 
     my $gene_begin = $gene_begin{$key};
     my $gene_end = $gene_end{$key};
@@ -832,9 +839,6 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
       if ($intron_count == 0) {
         ##  Not a case of intron retention
         $not_intron_retention++;
-        
-        ##  However, we will still print it out
-#         next;
       }
     
       if (!defined ($unique_genes{$gene_id_i})) {
@@ -844,20 +848,8 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
       my $out_start = $i + 1;
       my $out_end = $j - 1;
       my $out_attr = sprintf ("name=%s;count=%u;width=%u", $gene_id_i, $intron_count, $intron_width);
-#       my $out_score = sprintf ("%.6f", $score);
       my $outline = join ("\t", $this_chr, "sam2irs", "intron", $out_start, $out_end, $intron_count, $strand_i, "0", $out_attr);
       
-#       printf "%s", $this_chr;  ##  Name of the chromosome
-#       printf "\tsam2irs";
-#       printf "\tintron";
-#       printf "\t%u", $i + 1;  ##  Start position
-#       printf "\t%u", $j - 1;  ##  End position
-#       printf "\t%f", $score;
-#       printf "\t+";  ##  Strand is unused
-#       printf "\t0";  ##  Frame is unused
-#       printf "\tname=%s;width=%u;count=%u", $gene_id_i, $intron_width, $intron_count;
-#       printf "\n";
-
       $introns_output[$num_introns_output] = $outline;
       $num_introns_output++;
       
@@ -1107,9 +1099,7 @@ This script executes the following steps:
 
 =item 2. Process the command-line arguments.
 
-=item 3. Read in the file of chromosome lengths (i.e., the I<--chrlist> argument).  Knowing the maximum length of a chromosome limits the amount of memory that is allocated later for the array (whose length is equal to the length of the chromosome).
-
-=item 4. Read in the gene feature annotations (i.e., the GTF file provided with the I<--gtf> argument).
+=item 3. Read in the gene feature annotations (i.e., the GTF file provided with the I<--gtf> argument).
 
 =over 2
 
@@ -1121,9 +1111,9 @@ This script executes the following steps:
 
 =back
 
-=item 5. Read in the SAM file (i.e., provided via standard in) and store all of the alignments in an array.
+=item 4. Read in the SAM file (i.e., provided via standard in) and store all of the alignments in an array.
 
-=item 6. Make a pass over the stored SAM file and indicate whether the read is:
+=item 5. Make a pass over the stored SAM file and indicate whether the read is:
 
 =over 2
 
@@ -1133,7 +1123,11 @@ This script executes the following steps:
 
 =back
 
-=item 7. For each chromosome, do the following:
+=item 6. Make a pass over the SAM file to determine which chromosomes are to be processed, and how long each one is.
+
+=item 7. Use the GTF file to "correct" these chromosome lengths since some genes may exist after where reads align to.
+
+=item 8. For each chromosome, do the following:
 
 =over 2
 
@@ -1183,10 +1177,6 @@ This script executes the following steps:
 
 =over 5
 
-=item --chrlist I<file>
-
-A file of the list of chromosomes and their lengths.
-  
 =item --gtf I<file>
 
 Indicate the GTF file of genomic features to use.  Only exons will be used; all other features will be ignored.
@@ -1225,7 +1215,7 @@ Display this help message.
 
 Go into the Examples/ subdirectory and type the following:
 
-cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
+cat test1.sam | ../Perl/sam2irs.pl --verbose --gtf test1.gtf 2>/dev/null`
 
 =head1 NOTES
 
