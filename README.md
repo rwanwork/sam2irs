@@ -143,7 +143,22 @@ This output indicates that the chromosome "chr1" has an intron from position 11 
 
 The intron retention score is:  (15 / 7) / 36 = 0.0595
 
-In practice, the number of aligned bases will be very large and multiplying by a constant across all data sets is needed to prevent underflow.  In our work, we arbitrarily chose a constant of `100000000000`.  You will need to find a constant that gives you the range of values that fits for your data set, and then divide it through for your entire file.  What matters is the relative intron retention scores between intronic regions.
+
+###  Obtain the top-N IRS regions
+
+The above toy example only has only one intronic region.  In a real data set, you might have many regions and you want to have the top **N** sites.  To do that, take the `output.gtf` above and use the `Perl/score-irs.pl` as follows:
+
+  * `cat output.gtf | ../Perl/score-irs.pl --topn 100 >output-topN.gtf`
+
+By default, only the top N regions are printed.  The normalised score (i.e., 0.0595 in the above example) it not output.  If you want them output, then use the `--showscore` option.  The score will be shown as the first column.
+
+In practice, the number of aligned bases will be very large and multiplying by a constant across all data sets is needed to provide "sensible" values.  In our pulished work, we arbitrarily chose a constant of `100000000000`.  You will need to find a constant that gives you the range of values that fits for your data set, and then divide it through for your entire file.  The value of this constant does not matter; what matters is that you use the same constant for all of your samples.  You can modify this constant in the code, or you can provide a new value using the `--normaliser` option.
+
+For example, combining these two options, you can do the following:
+
+  * `cat output.gtf | ../Perl/score-irs.pl --topn 100 --showscore --normaliser 100000 >output-topN.gtf`
+  
+Note that without the `--showscore` option, the normaliser constant is not too important since the regions are printed out based on relative values.
 
 
 Problems
@@ -190,7 +205,5 @@ Copyright and License
 sam2irs is distributed under the terms of the GNU General Public License (GPL, version 3 or later) -- see the file LICENSE for details.
 
 Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts and no Back-Cover Texts. A copy of the license is included with the archive as LICENSE.
-
-
 
 

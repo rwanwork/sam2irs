@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 #    score-irs.pl -- Score the introns in an IRS file, while taking the top N.
-#    Copyright (C) 2019  Raymond Wan
+#
+#    Copyright (C) 2019-2020  Raymond Wan
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@ use Pod::Usage;
 ##  Important constants
 ########################################
 
-##  Constant for normalization
+##  Default constant for normalization
 my $NORMALIZER_CONSTANT = 100000000000;
 
 
@@ -139,6 +140,10 @@ $config -> define ("topn", {
   ARGCOUNT => AppConfig::ARGCOUNT_ONE,
   ARGS => "=i"
 });                        ##  How many to keep
+$config -> define ("normaliser", {
+  ARGCOUNT => AppConfig::ARGCOUNT_ONE,
+  ARGS => "=i"
+});                        ##  Normaliser constant
 $config -> define ("showscore!", {
   ARGCOUNT => AppConfig::ARGCOUNT_NONE
 });                        ##  Print the score out
@@ -178,6 +183,10 @@ if (!defined ($config -> get ("topn"))) {
 }
 $topn_arg = $config -> get ("topn");
 
+if (defined ($config -> get ("normaliser"))) {
+  $NORMALIZER_CONSTANT = $config -> get ("normaliser");
+}
+
 
 ########################################
 ##  Summarize the settings
@@ -196,6 +205,10 @@ if ($verbose_arg) {
 my $gtf_pos = 0;
 my $gtf_intron_total = 0;
 my $gtf_total = 0;
+
+my $max_score = 0;
+my $max_norm_score = 0;
+
 while (<STDIN>) {
   my $line = $_;
   chomp $line;
@@ -214,6 +227,11 @@ while (<STDIN>) {
   my $aligned_bases = GetAlignedBases ($attributes_gtf);
   my $score = $count / $width / $aligned_bases * $NORMALIZER_CONSTANT;
   
+  if ($score > $max_norm_score) {
+    $max_score = $count / $width / $aligned_bases;
+    $max_norm_score = $score;
+  }
+
   ##  Maintaining a list of chromosomes to process (and how many times it was encountered)
   if (!defined $chr_list{$chr_tmp}) {
     $chr_list{$chr_tmp} = 0;
@@ -233,6 +251,8 @@ if ($verbose_arg) {
   printf STDERR "II\tGTF records read:  %u\n", $gtf_total;
   printf STDERR "II\t  Intron records:  %u\n", $gtf_intron_total;
   printf STDERR "II\tNumber of chromosomes in GTF file:  %u\n", $num_chromosomes;
+  printf STDERR "II\tMaximum score (before normalising):  %e\n", $max_score;
+  printf STDERR "II\tMaximum score (after normalising):  %f\n", $max_norm_score;
 }
 
 
@@ -252,6 +272,31 @@ for (my $i = 0; $i < $topn_arg; $i++) {
 
 score-irs.pl -- Scores an IRS file and takes the top N records (the records themselves are unchanged).
 
+=head1 OPTIONS
+
+=over 5
+
+=item --topn I<integer>
+
+Indicate how many of the top N samples you should print out.
+  
+=item --showscore
+
+Show the normalised score as the first column of each row.  By default, normalised score is not shown.  Try various values with the --normaliser argument to get a reasonable range of values.  (Thus, you would need to perform two passes.)  
+  
+=item --normaliser I<integer>
+
+Normalise all scores by this number.  Default is defined by the variable $NORMALIZER_CONSTANT.  You should use the same normaliser constant for all samples in your experiment!
+  
+=item --verbose I<level>
+
+Display verbose information during processing.
+
+=item --help
+
+Display this help message.
+
+=back
 
 =head1 AUTHOR
 
@@ -259,6 +304,6 @@ Raymond Wan <rwan.work@gmail.com>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2016-2019, Raymond Wan, All rights reserved.
+Copyright (C) 2019-2020, Raymond Wan, All rights reserved.
 
 
