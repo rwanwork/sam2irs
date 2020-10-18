@@ -180,8 +180,10 @@ Hints
 1.  `sam2irs` does not directly support compressed SAM files in BAM format.  However, since it accepts the SAM file via standard in, you could simply do this instead:
 
     `samtools view test.bam | ../Perl/sam2irs.pl --verbose 0 --gtf test1.gtf 1>output.gtf 2>error.txt`
-    
-    
+
+2.  The amount of memory used by `sam2irs` is dominated by the length of the longest chromosome being processed, the size of the SAM file, and the size of the GTF file.  If the length of the longest chromosome is `n`, then the amount of memory used is `3 * 4n`.  So, if the longest chromosome is 1000 base pairs, then the amount of memory used by this program is *approximately* 12000 bytes plus the sizes of the SAM and GTF files.
+
+
 About sam2irs
 -------------
 
