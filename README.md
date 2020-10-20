@@ -167,9 +167,9 @@ Problems
 Hopefully, you do not encounter problems while using this program.  However, if you do, then you can obtain additional information by increasing the level of verbosity (i.e., the `--verbose` option).  Instead of the `0` in the above example, consider other values:
 
 0.  Do not output any debugging information.
-1.  Provide summary information as the script starts and as it finishes.
-2.  Provide information as each chromosome is processed.
-3.  Provide all debugging information.
+1.  Provide summary information as the script starts and as it finishes to standard error.
+2.  Provide information as each chromosome is processed to a log file (--log).
+3.  Provide all debugging information to a log file (--log).
 
 Note that fatal errors will cause the program to terminate immediately with an error message.  This will happen regardless of the verbose level provided.
 
