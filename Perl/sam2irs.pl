@@ -482,7 +482,10 @@ while (<$chr_fp>) {
       $chrlist_hash_input{$chr_tmp} = $size_tmp;
     }
     elsif ($size_tmp < $chrlist_hash_input{$chr_tmp}) {
-      printf STDERR "WW\tThe chromosome length for %s (%u) is too short!  Needs to be more than %u!\n", $chr_tmp, $size_tmp, $chrlist_hash_input{$chr_tmp};
+      printf STDERR "WW\tThe chromosome length for %s (%u) is too short!\n", $chr_tmp, $size_tmp;
+      ##  Removed the next line since it is only a lower estimate of what is needed.
+      ##  So, it is a bit misleading.
+#       printf STDERR "WW\tNeeds to be more than %u!\n", $chrlist_hash_input{$chr_tmp};
       exit (1);
     }
   }
