@@ -1333,7 +1333,7 @@ Display this help message.
 
 Go into the Examples/ subdirectory and type the following:
 
-cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
+cat test.sam | ../Perl/sam2irs.pl --verbose 0 --chrlist test.sizes --gtf test1.gtf 2>/dev/null`
 
 =head1 NOTES
 
