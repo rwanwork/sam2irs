@@ -83,9 +83,11 @@ sub GetGeneName {
 
 ##  Arguments provided by the user
 my $verbose_level_arg = $VERBOSE_NONE;
+my $chrlist_arg = "";
 my $gtf_arg = "";
 my $sam_record_arg = "";
 my $exons_arg = 0;
+my $log_fn_arg = "";
 
 ##  Arrays of input files
 my @sam_input;  ##  All SAM records (= # of lines in the SAM file)
@@ -134,25 +136,33 @@ my $config = AppConfig -> new ({
 
 my $getopt = AppConfig::Getopt -> new ($config);
 
+$config -> define ("chrlist", {
+  ARGCOUNT => AppConfig::ARGCOUNT_ONE,
+  ARGS => "=s"
+});
 $config -> define ("gtf", {
-           ARGCOUNT => AppConfig::ARGCOUNT_ONE,
-           ARGS => "=s"
-  });                        ##  Indicate the GTF file to read
+  ARGCOUNT => AppConfig::ARGCOUNT_ONE,
+  ARGS => "=s"
+});                        ##  Indicate the GTF file to read
 $config -> define ("samrecord", {
-           ARGCOUNT => AppConfig::ARGCOUNT_ONE,
-           ARGS => "=s"
-  });                        ##  The record file for SAM
+  ARGCOUNT => AppConfig::ARGCOUNT_ONE,
+  ARGS => "=s"
+});                        ##  The record file for SAM
 $config -> define ("exons!", {
-           ARGCOUNT => AppConfig::ARGCOUNT_NONE
-  });                        ##  Flag to include exons
+  ARGCOUNT => AppConfig::ARGCOUNT_NONE
+});                        ##  Flag to include exons
 $config -> define ("verbose", {
-           DEFAULT  => 0,
-           ARGCOUNT => AppConfig::ARGCOUNT_ONE,
-           ARGS => "=i"
-  });                        ##  Verbose output
+  DEFAULT  => 0,
+  ARGCOUNT => AppConfig::ARGCOUNT_ONE,
+  ARGS => "=i"
+});                        ##  Verbose output
+$config -> define ("log", {
+  ARGCOUNT => AppConfig::ARGCOUNT_ONE,
+  ARGS => "=s"
+});                        ##  The log file for verbose levels >= $VERBOSE_CHR
 $config -> define ("help!", {
-           ARGCOUNT => AppConfig::ARGCOUNT_NONE
-  });                        ##  Help screen
+  ARGCOUNT => AppConfig::ARGCOUNT_NONE
+});                        ##  Help screen
 
 ##  Process the command-line options
 $config -> getopt ();
@@ -187,6 +197,12 @@ if (defined ($config -> get ("verbose"))) {
   }
 }
 
+if (!defined ($config -> get ("chrlist"))) {
+  printf STDERR "EE\tThe option --chrlist requires a list of chromosomes (i.e., format is genome sizes file).\n";
+  exit (1);
+}
+$chrlist_arg = $config -> get ("chrlist");
+
 if (!defined ($config -> get ("gtf"))) {
   printf STDERR "EE\tThe option --gtf requires a GTF filename.\n";
   exit (1);
@@ -202,6 +218,19 @@ if (defined ($config -> get ("samrecord"))) {
   $sam_record_arg = $config -> get ("samrecord");
 }
 
+if (defined ($config -> get ("log"))) {
+  $log_fn_arg = $config -> get ("log");
+  if (($config -> get ("verbose") == $VERBOSE_NONE) || ($config -> get ("verbose") == $VERBOSE_SUMMARY)) {
+    $verbose_level_arg = $VERBOSE_CHR;
+  }
+}
+else {
+  if ($verbose_level_arg >= $VERBOSE_CHR) {
+    printf STDERR "EE\tFilename for log file required with a verbose level >= %u.\n", $VERBOSE_CHR;
+    exit (1);
+  }
+}
+
 $exons_arg = 0;
 if ($config -> get ("exons")) {
   $exons_arg = 1;
@@ -213,10 +242,19 @@ if ($config -> get ("exons")) {
 ########################################
 
 if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-  printf STDERR "II\tFilename of input GTF file:  %s\n", $gtf_arg;
-  printf STDERR "II\tOptional file for recording information about SAM files:  ";
+  printf STDERR "II\tFilenames\n";
+  printf STDERR "II\t  Input chromosome list:  %s\n", $chrlist_arg;
+  printf STDERR "II\t  Input GTF file:  %s\n", $gtf_arg;
+  printf STDERR "II\t  Record of SAM file:  ";
   if (defined ($config -> get ("samrecord"))) {
       printf STDERR "%s\n", $sam_record_arg;
+  }
+  else {
+      printf STDERR "Not provided\n";
+  }
+  printf STDERR "II\t  Log file:  ";
+  if (defined ($config -> get ("log"))) {
+      printf STDERR "%s\n", $log_fn_arg;
   }
   else {
       printf STDERR "Not provided\n";
@@ -228,6 +266,16 @@ if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
     printf STDERR "II\tOutput exons:  No\n";
   }
   printf STDERR "\n";
+}
+
+
+########################################
+##  Create log file
+########################################
+
+my $log_fp;
+if (length ($log_fn_arg) != 0) {
+  open ($log_fp, ">", $log_fn_arg) or die "EE\tCould not open $log_fn_arg for output!\n";
 }
 
 
@@ -290,15 +338,14 @@ while (<$gtf_fp>) {
 close ($gtf_fp);
 
 if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-  printf STDERR "II\tProcessed GTF file (%s):\n", $gtf_arg;
-  printf STDERR "II\t  Total input lines read:  %u\n", $total_gtf;
-  printf STDERR "II\t    Retained (exons only):  %u\n", $gtf_input_pos;
-  printf STDERR "II\t    Discarded (Gm):  %u\n", $gm_gtf;
-  printf STDERR "II\t    Discarded:\n";
-  printf STDERR "II\t      # of CDS:  %u\n", $cds_count;
-  printf STDERR "II\t      # of start codons:  %u\n", $start_codon_count;
-  printf STDERR "II\t      # of stop codons:  %u\n", $stop_codon_count;
-  printf STDERR "II\t      # of others:  %u\n", $other_count;
+  printf STDERR "II\tProcessed GTF file (%s, %u records):\n", $gtf_arg, $total_gtf;
+  printf STDERR "II\t  Retained ('exon'):\t\t%u\n", $gtf_input_pos;
+  printf STDERR "II\t  Discarded:\n";
+  printf STDERR "II\t    Gene names with 'Gm':\t%u\n", $gm_gtf;
+  printf STDERR "II\t    # of 'CDS':\t\t\t%u\n", $cds_count;
+  printf STDERR "II\t    # of 'start_codon':\t\t%u\n", $start_codon_count;
+  printf STDERR "II\t    # of 'stop_codon':\t\t%u\n", $stop_codon_count;
+  printf STDERR "II\t    # of Others:\t\t%u\n", $other_count;
   printf STDERR "\n";
 }
 
@@ -339,21 +386,21 @@ while (<STDIN>) {
 
   my ($qname_tmp, $flag_tmp, $rname_tmp, $pos_tmp, $mapq_tmp, $cigar_tmp, $rnext_tmp, $pnext_tmp, $tlen_tmp, $seq_tmp, $qual_tmp, $others_fields_tmp) = split /\t/, $line;
 
-  ##  Store the alignment in an array
+  ##  Store only the alignment in an array
   $sam_input[$total_sam] = join ("\t", $flag_tmp, $rname_tmp, $pos_tmp, $cigar_tmp);
   
   $total_sam++;
 }
 
 if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
-  printf STDERR "II\tSAM file:\n";
-  printf STDERR "II\t  Total number of lines read:  %u\n", $sam_total_lines;
-  printf STDERR "II\t  Number of header lines:  %u\n", $sam_header_lines;
-  printf STDERR "II\t  Number of invalid lines:  %u\n", $sam_invalid_lines;
-  printf STDERR "II\t  Number of lines stored:  %u\n", $total_sam;
+  printf STDERR "II\tSAM file (STDIN, %u records):\n", $sam_total_lines;
+  printf STDERR "II\t  Number of header lines:\t\t%u\n", $sam_header_lines;
+  printf STDERR "II\t  Number of incomplete records:\t\t%u\n", $sam_invalid_lines;
+  printf STDERR "II\t  Number of records stored:\t\t%u\n", $total_sam;
 }
 
-##  After knowing the size of the SAM file, make another pass over it, initializing it.
+##  After knowing the size of the SAM file, make another pass over it, 
+##    classifying the records.
 for (my $i = 0; $i < $total_sam; $i++) {
   my $line = $sam_input[$i];
     
@@ -377,9 +424,13 @@ for (my $i = 0; $i < $total_sam; $i++) {
 
 for (my $i = 0; $i < $total_sam; $i++) {  
   my $line = $sam_input[$i];
-    
-  my ($flag_tmp, $rname_tmp, $pos_tmp, $cigar_tmp) = split /\t/, $line;
+
+  if ($classify_sam_input[$i] == $CLASSIFY_SAM_UNALIGNED) {
+    next;
+  }
   
+  my ($flag_tmp, $rname_tmp, $pos_tmp, $cigar_tmp) = split /\t/, $line;
+
   if (!defined ($chrlist_hash_input{$rname_tmp})) {
     $chrlist_hash_input{$rname_tmp} = $pos_tmp;
     $chrlist_sam_acc{$rname_tmp} = 0;
@@ -409,12 +460,51 @@ for (my $i = 0; $i < $gtf_input_pos; $i++) {
 
 
 ########################################
+##  Read in the chromosome list to "confirm" the lengths are correct
+########################################
+
+if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
+  printf STDERR "II\tProcessing chromosome lengths (%s)...\n", $chrlist_arg;
+}
+
+open (my $chr_fp, "<", $chrlist_arg) or die "EE\tCould not open $chrlist_arg for input!\n";
+while (<$chr_fp>) {
+  my $line = $_;
+  chomp $line;
+
+  my ($chr_tmp, $size_tmp) = split /\t/, $line;
+  
+  if (!defined ($chrlist_hash_input{$chr_tmp})) {
+    next;
+  }
+  else {
+    if ($size_tmp >= $chrlist_hash_input{$chr_tmp}) {
+      $chrlist_hash_input{$chr_tmp} = $size_tmp;
+    }
+    elsif ($size_tmp < $chrlist_hash_input{$chr_tmp}) {
+      printf STDERR "WW\tThe chromosome length for %s (%u) is too short!  Needs to be more than %u!\n", $chr_tmp, $size_tmp, $chrlist_hash_input{$chr_tmp};
+      exit (1);
+    }
+  }
+}
+close ($chr_fp);
+
+if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
+  printf STDERR "\n";
+}
+
+
+########################################
 ##  Process a chromosome at a time
 ########################################
 
-foreach my $this_chr (sort (keys %chrlist_hash_input)) {
-#   printf STDERR "Processing:  %s\n", $this_chr;
+my $num_chrs_processed = 0;
+my $total_chrs_processed = keys %chrlist_hash_input;
+if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
+  printf STDERR "II\tTotal chromosomes to process:  %u\n", $total_chrs_processed;
+}
 
+foreach my $this_chr (sort (keys %chrlist_hash_input)) {
   ##  Increase the length of the chromosome (1-based, so add 1)
   my $chr_length = $chrlist_hash_input{$this_chr} + 1;
 
@@ -539,15 +629,15 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
   $not_overlap_gtf = $num_genes_tmp - $overlap_gtf;
 
   if (($verbose_level_arg >= $VERBOSE_CHR) || ($verbose_level_arg >= $VERBOSE_ALL)) {
-    printf STDERR "II\tTotal number of genes:  %u\n", $num_genes_tmp;
-    printf STDERR "II\t  Overlapping:  %u\n", $overlap_gtf;
-    printf STDERR "II\t  Not overlapping:  %u\n", $not_overlap_gtf;
+    printf $log_fp "II\tTotal number of genes:  %u\n", $num_genes_tmp;
+    printf $log_fp "II\t  Overlapping:  %u\n", $overlap_gtf;
+    printf $log_fp "II\t  Not overlapping:  %u\n", $not_overlap_gtf;
     
     if ($verbose_level_arg >= $VERBOSE_ALL) {
-      printf STDERR "II\tList of genes:\n";
+      printf $log_fp "II\tList of genes:\n";
   
       foreach my $key (sort (keys %overlaps)) {
-        printf STDERR "GG\t  %s\n", $key;
+        printf $log_fp "GG\t  %s\n", $key;
       }
     }
   }
@@ -631,10 +721,10 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
       }
     }
 
-    printf STDERR "II\tSize of chromosome:  %u\n", $chr_length;
-    printf STDERR "II\t  Intron positions:  %u (%.2f%%)\n", $intron_pos_count, $intron_pos_count / ($chr_length) * 100;
-    printf STDERR "II\t  Exon positions:  %u (%.2f%%)\n", $exon_pos_count, $exon_pos_count / ($chr_length) * 100;
-    printf STDERR "II\t  Non-intron/exon positions:  %u (%.2f%%)\n", $not_exon_pos_count, $not_exon_pos_count / ($chr_length) * 100;
+    printf $log_fp "II\tSize of chromosome:  %u\n", $chr_length;
+    printf $log_fp "II\t  Intron positions:  %u (%.2f%%)\n", $intron_pos_count, $intron_pos_count / ($chr_length) * 100;
+    printf $log_fp "II\t  Exon positions:  %u (%.2f%%)\n", $exon_pos_count, $exon_pos_count / ($chr_length) * 100;
+    printf $log_fp "II\t  Non-intron/exon positions:  %u (%.2f%%)\n", $not_exon_pos_count, $not_exon_pos_count / ($chr_length) * 100;
   }
 
 
@@ -647,12 +737,12 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
     my $line = $sam_input[$i];
     
     my ($flag_tmp, $rname_tmp, $pos_tmp, $cigar_tmp) = split /\t/, $line;
-  
+
     ##  Skip alignments that are not part of this chromosome
     if ($rname_tmp ne $this_chr) {
       next;
     }
-    
+
     my $contains_n = 0;
     if ($cigar_tmp eq "*") {
       $unavailable_cigar_sam++;
@@ -757,11 +847,11 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
 
   $total_bases += $total_bases_chr;
   if ($verbose_level_arg >= $VERBOSE_CHR) {
-    printf STDERR "II\tTotal bases:  %u\n", $total_bases_chr;
-    printf STDERR "II\tSAM entries:\n";
-    printf STDERR "II\t  Unavailable CIGAR string (skipped):  %u\n", $unavailable_cigar_sam;
-    printf STDERR "II\t  With N (skipped):  %u\n", $n_cigar_sam;
-    printf STDERR "II\t  Without N (used):  %u\n", $not_n_cigar_sam;
+    printf $log_fp "II\tTotal bases:  %u\n", $total_bases_chr;
+    printf $log_fp "II\tSAM entries:\n";
+    printf $log_fp "II\t  Unavailable CIGAR string (skipped):  %u\n", $unavailable_cigar_sam;
+    printf $log_fp "II\t  With N (skipped):  %u\n", $n_cigar_sam;
+    printf $log_fp "II\t  Without N (used):  %u\n", $not_n_cigar_sam;
   }
 
 
@@ -996,9 +1086,18 @@ foreach my $this_chr (sort (keys %chrlist_hash_input)) {
   my $intron_retention_genes = keys (%unique_genes);
 
   if ($verbose_level_arg >= $VERBOSE_CHR) {
-    printf STDERR "II\tIntron retention genes:  %u\n", $intron_retention_genes;
-    printf STDERR "II\tIntron retentions:  %u\n", $intron_retention;
-    printf STDERR "II\tNon-intron retentions:  %u\n", $not_intron_retention;
+    printf $log_fp "II\tIntron retention genes:  %u\n", $intron_retention_genes;
+    printf $log_fp "II\tIntron retentions:  %u\n", $intron_retention;
+    printf $log_fp "II\tNon-intron retentions:  %u\n", $not_intron_retention;
+    printf $log_fp "\n";
+  }
+
+  $num_chrs_processed++;
+
+  if ($num_chrs_processed % 10 == 0) {
+    if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
+      printf STDERR "II\t%u of %u chromosomes processed...\n", $num_chrs_processed, $total_chrs_processed;
+    }
   }
 }  ##  End outer loop
 
@@ -1068,6 +1167,17 @@ if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
   printf STDERR "II\t  Unknown records:  %u\n", $classify_sam_unknown_count;
   printf STDERR "\n";
 }
+
+
+########################################
+##  Close log file
+########################################
+
+if (length ($log_fn_arg) != 0) {
+  close ($log_fp);
+}
+
+
 
 =pod
 
@@ -1177,6 +1287,10 @@ This script executes the following steps:
 
 =over 5
 
+=item --chrlist I<file>
+
+A file indicating the list of chromosomes and their lengths.
+
 =item --gtf I<file>
 
 Indicate the GTF file of genomic features to use.  Only exons will be used; all other features will be ignored.
@@ -1191,13 +1305,13 @@ By default, intron regions are output.  This flag indicates that exons should be
   
 =item --verbose I<level>
 
-Display verbose debugging information about the execution of this script based on the "level" provided to standard error.  Note that a lot of output is provided if levels 2 or 3 are selected.
+Display verbose debugging information about the execution of this script based on the "level" provided to standard error.  Note that a lot of output is provided if levels 2 or 3 are selected.  Because of this, the --log option is also required.
 
 =over 2
 
 =item 0.  Do not output any debugging information.
 
-=item 1.  Provide summary information as the script starts and as it finishes.
+=item 1.  Provide summary information as the script starts and as it finishes to STDERR.
 
 =item 2.  Provide information as each chromosome is processed.
 
@@ -1205,6 +1319,10 @@ Display verbose debugging information about the execution of this script based o
 
 =back
 
+=item --log I<file>
+
+Filename of the log file to store verbose information at levels 2 and above.
+  
 =item --help
 
 Display this help message.
@@ -1215,7 +1333,7 @@ Display this help message.
 
 Go into the Examples/ subdirectory and type the following:
 
-cat test1.sam | ../Perl/sam2irs.pl --verbose --gtf test1.gtf 2>/dev/null`
+cat test1.sam | ../Perl/sam2irs.pl --verbose --chrlist test1.genome --gtf test1.gtf 2>/dev/null`
 
 =head1 NOTES
 
