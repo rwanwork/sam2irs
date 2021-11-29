@@ -18,7 +18,7 @@ The manuscript that makes use of this software has been published as:
 
     L. Yue, R. Wan, S. Luan, W. Zeng, T. H. Cheung.  Dek Modulates Global Intron Retention during Muscle Stem Cells Quiescence Exit, Developmental Cell, 53(6), pg. 661--676, 2020.
 
-It is available at this [link](https://doi.org/10.1016/j.devcel.2020.05.006).  An earlier version appears in Cell Press' Sneak Peak [service](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3385139).
+It is available at this [link](https://doi.org/10.1016/j.devcel.2020.05.006).  An earlier version (which should not be cited) appears in Cell Press' Sneak Peak [service](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3385139).
 
 
 Requirements
@@ -35,13 +35,15 @@ Experiments with this software have been successfully run on Linux systems runni
   * CentOS 6.9 64-bit and
   * Ubuntu 18.04 and 19.04
 
-The versions represent the tools used during software development or when running the experiments in the paper. They do not represent the minimum requirements; it is possible that lower versions can be used.
+The versions above represent the tools used during software development or when running the experiments in the paper. They do not represent the minimum requirements; it is possible that lower versions can be used.
+
+We highly recommend using `conda`.  If you are, then you can create an environment using `conda env create -f environment.yml`, as explained in the online conda [instructions](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file).  This will install the required programs above (with the exception of `conda` itself, of course).
 
 
 Organization
 ------------
 
-After cloning this repository from GitHub, the following directory structure is obtained:
+After cloning this repository from GitHub using the `git clone` command, the following directory structure is obtained:
 
     .
     ├── environment.yml
