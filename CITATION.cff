@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+title: Dek Modulates Global Intron Retention during Muscle Stem Cells Quiescence Exit
+message: 'If you use this software, please cite it as below.'
+type: software
+authors:
+  - family-names: "Yue"
+    given-names: "L"
+  - family-names: "Wan"
+    given-names: "R"
+  - family-names: "Luan"
+    given-names: "S"
+  - family-names: "Zeng"
+    given-names: "W"
+  - family-names: "Cheung"
+    given-names: "T H"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Yue"
+    given-names: "L"
+    orcid: "https://orcid.org/0000-0001-6966-0638"
+  - family-names: "Wan"
+    given-names: "R"
+    orcid: "https://orcid.org/0000-0003-3202-7008"
+  - family-names: "Luan"
+    given-names: "S"
+  - family-names: "Zeng"
+    given-names: "W"
+  - family-names: "Cheung"
+    given-names: "T H"
+  doi: "https://doi.org/10.1016/j.devcel.2020.05.006"
+  journal: "Developmental Cell"
+  start: 661 # First page number
+  end: 676 # Last page number
+  title: "Dek Modulates Global Intron Retention during Muscle Stem Cells Quiescence Exit"
+  issue: 6
+  volume: 53
+  year: 2020
