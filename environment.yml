@@ -4,7 +4,6 @@ channels:
   - r
   - bioconda
   - anaconda
-  - intel
   - defaults
 dependencies:
   - aioeasywebdav=2.4.0=py37_1000
