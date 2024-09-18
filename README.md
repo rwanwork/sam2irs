@@ -69,7 +69,7 @@ As input, sam2irs requires:
 2.  A list of the exons of each gene (in the gene transfer format, [GTF](https://asia.ensembl.org/info/website/upload/gff.html)); and
 3.  The aligned reads (in the Sequence Alignment/Map format, [SAM](http://www.htslib.org/doc/sam.html)).
 
-The list of chromosomes is a tab-separated file, with each row corresponding to a chromosome.  Each row has two fields.  The first is the name of the chromosome and the second is the length of the chromosome in base pairs.
+The list of chromosomes is a tab-separated file, with each row corresponding to a chromosome.  Each row has two fields.  The first is the name of the chromosome and the second is the length of the chromosome in base pairs.  Only chromosomes in this list are processed; chromosomes mentioned in the SAM file that are **not** in this list are therefore skipped.
 
 The input format for `irs2fasta` is the output format of `sam2irs`.
 
@@ -184,6 +184,8 @@ Hints
     `samtools view test.bam | ../Perl/sam2irs.pl --verbose 0 --gtf test1.gtf 1>output.gtf 2>error.txt`
 
 2.  The amount of memory used by `sam2irs` is dominated by the length of the longest chromosome being processed, the size of the SAM file, and the size of the GTF file.  If the length of the longest chromosome is `n`, then the amount of memory used is `3 * 4n`.  So, if the longest chromosome is 1000 base pairs, then the amount of memory used by this program is *approximately* 12000 bytes plus the sizes of the SAM and GTF files.
+
+3.  While each chromosome is processed independently, the entire SAM file is read in and kept in memory.  If you are having problems processing your data, then you can separate the SAM file so that each chromosome is a separate file (i.e., by using `grep`).  Then, process each chromsome one-by-one.
 
 
 About sam2irs
