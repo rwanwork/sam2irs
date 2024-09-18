@@ -113,6 +113,7 @@ my $num_exons_output = 0;
 
 ##  Hashes of input files
 my %chrlist_hash_input;  ##  Hash of chromosomes to process (= # of chromosomes)
+my %chrlist_sizes_input;  ##  Set of chromosomes to process, according to $chrlist_arg
 my %chrlist_sam_acc;
 my %chrlist_gtf_acc;
 
@@ -496,6 +497,15 @@ while (<$chr_fp>) {
     exit (1);
   }
 
+  ##  Record which chromosomes are in the chromosome lengths file
+  if (defined ($chrlist_sizes_input{$chr_tmp})) {
+    printf STDERR "EE\tThe chromosome %s is defined twice in the chromosome lengths file (%s)!\n", $chr_tmp, $chrlist_arg;
+    exit (1);
+  }
+  else {
+    $chrlist_sizes_input{$chr_tmp} = $size_tmp;
+  }
+
   if (!defined ($chrlist_hash_input{$chr_tmp})) {
     next;
   }
@@ -530,7 +540,14 @@ if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
 }
 
 foreach my $this_chr (sort (keys %chrlist_hash_input)) {
-  printf STDERR "Processing %s...\n", $this_chr;
+  if (!defined ($chrlist_sizes_input{$this_chr})) {
+    printf STDERR "II\tChromosome %s not in %s ... skipping.\n", $this_chr, $chrlist_arg;
+    next;
+  }
+  else {
+    printf STDERR "II\tProcessing %s ...\n", $this_chr;
+  }
+
   ##  Increase the length of the chromosome (1-based, so add 1)
   my $chr_length = $chrlist_hash_input{$this_chr} + 1;
 
