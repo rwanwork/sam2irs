@@ -61,6 +61,9 @@ my $VERBOSE_ALL = 3;
 ##  Important functions
 ########################################
 
+##  A gene name in the GTF file should be in one of these two formats:
+##    1.  Appears in quotes after the phrase "gene_id" or
+##    2.  A string of characters with no whitespace
 sub GetGeneName {
   my ($gtf_attributes) = @_;
   my $gene_name = "";
@@ -68,8 +71,16 @@ sub GetGeneName {
   if ($gtf_attributes =~ /gene_id \"([^"]+)\"/) {
     $gene_name = $1;
   }
+  elsif ($gtf_attributes =~ /^(\S+)$/) {
+    $gene_name = $1;
+  }
   else {
     printf STDERR "EE\tCould not match gene name in %s.\n", $gtf_attributes;
+    printf STDERR "EE\tIf you believe this error is incorrect, then your GTF file has\n";
+    printf STDERR "EE\tgene names that are not in the expected format.  Please contact\n";
+    printf STDERR "EE\tthe developer on GitHub by filing an issue with a sample of your GTF file.\n";
+    printf STDERR "EE\n";
+    printf STDERR "EE\t  GitHub repository:  https://github.com/rwanwork/sam2irs";
     exit (1);
   }
 
@@ -519,6 +530,7 @@ if ($verbose_level_arg >= $VERBOSE_SUMMARY) {
 }
 
 foreach my $this_chr (sort (keys %chrlist_hash_input)) {
+  printf STDERR "Processing %s...\n", $this_chr;
   ##  Increase the length of the chromosome (1-based, so add 1)
   my $chr_length = $chrlist_hash_input{$this_chr} + 1;
 
