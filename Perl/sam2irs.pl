@@ -472,8 +472,19 @@ while (<$chr_fp>) {
   my $line = $_;
   chomp $line;
 
+  ##  Remove lines of all whitespace, regardless of where it occurs in the file
+  if ($line =~ /^(\s*)$/) {
+    next;
+  }
+
   my ($chr_tmp, $size_tmp) = split /\t/, $line;
   
+  ##  Check that the second field of the record is defined
+  if (!defined ($size_tmp)) {
+    printf STDERR "EE\tEvery record in the file of chromosome lengths (%s) must have two fields, separated by a single tab character.\n", $chrlist_arg;
+    exit (1);
+  }
+
   if (!defined ($chrlist_hash_input{$chr_tmp})) {
     next;
   }
